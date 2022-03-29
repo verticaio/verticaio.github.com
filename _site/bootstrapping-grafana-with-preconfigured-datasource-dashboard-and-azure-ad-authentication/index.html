@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Bootstrap Grafana container with datasource, dashboards and Azure AD AuthN/AuthZ - Sam De Wolf | Microsoft Azure, Kubernetes & Cloud Native</title>
+
+  <!-- Edit site and author settings in `_config.yml` to make the social details your own -->
+
+    <meta content="Sam De Wolf | Microsoft Azure, Kubernetes & Cloud Native" property="og:site_name">
+  
+    <meta content="Bootstrap Grafana container with datasource, dashboards and Azure AD AuthN/AuthZ" property="og:title">
+  
+  
+    <meta content="article" property="og:type">
+  
+  
+    <meta content="bootstrap-grafana-with-preconfigured-datasource-dashboard-and-azure-ad-authentication" property="og:description">
+  
+  
+    <meta content="dewolfs.github.io/bootstrapping-grafana-with-preconfigured-datasource-dashboard-and-azure-ad-authentication/" property="og:url">
+  
+  
+    <meta content="2020-09-10T16:30:20+02:00" property="article:published_time">
+    <meta content="dewolfs.github.io/about/" property="article:author">
+  
+  
+    <meta content="dewolfs.github.io/assets/img/2020-09-10-bootstrap-grafana-with-preconfigured-datasource-dashboard-and-azure-ad-authentication.jpg" property="og:image">
+  
+  
+    
+  
+  
+    
+    <meta content="Azure" property="article:tag">
+    
+    <meta content="Prometheus" property="article:tag">
+    
+    <meta content="Grafana" property="article:tag">
+    
+    <meta content="DevOps" property="article:tag">
+    
+    <meta content="Kubernetes" property="article:tag">
+    
+  
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content="@">
+    <meta name="twitter:creator" content="@sam_dewolf">
+  
+    <meta name="twitter:title" content="Bootstrap Grafana container with datasource, dashboards and Azure AD AuthN/AuthZ">
+  
+  
+    <meta name="twitter:url" content="dewolfs.github.io/bootstrapping-grafana-with-preconfigured-datasource-dashboard-and-azure-ad-authentication/">
+  
+  
+    <meta name="twitter:description" content="bootstrap-grafana-with-preconfigured-datasource-dashboard-and-azure-ad-authentication">
+  
+  
+    <meta name="twitter:image:src" content="dewolfs.github.io/assets/img/2020-09-10-bootstrap-grafana-with-preconfigured-datasource-dashboard-and-azure-ad-authentication.jpg">
+  
+
+	<meta name="description" content="bootstrap-grafana-with-preconfigured-datasource-dashboard-and-azure-ad-authentication">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta property="og:image" content="">
+	<!--<link rel="shortcut icon" href="/assets/img/favicon/favicon.ico" type="image/x-icon">
+	<link rel="apple-touch-icon" href="/assets/img/favicon/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="/assets/img/favicon/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="144x144" href="/assets/img/favicon/apple-touch-icon-144x144.png">-->
+  <!--Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#263959">
+	<!-- Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#263959">
+	<!-- iOS Safari -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="#263959">
+	<!-- Google Fonts -->
+	<link href="https://fonts.googleapis.com/css?family=PT+Serif:400,700" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet">
+	<!-- Font Awesome -->
+	<link rel="stylesheet" href="/assets/fonts/font-awesome/css/font-awesome.min.css">
+	<!-- Styles -->
+	<link rel="stylesheet" href="/assets/css/main.css">
+</head>
+
+<body>
+
+  <div class="wrapper">
+    <aside class="sidebar">
+  <header>
+    <div class="about">
+      <div class="cover-author-image">
+        <a href="/"><img src="/assets/img/bio-photo.jpg" alt="Sam De Wolf"></a>
+      </div>
+      <div class="author-name">Sam De Wolf</div>
+      <p>Focus on cloud-native application architectures using container technologies on Microsoft Azure.</p>
+    </div>
+  </header> <!-- End Header -->
+  <footer>
+    <section class="contact">
+      <h3 class="contact-title">Contact me</h3>
+      <ul>
+        
+          <li><a href="https://twitter.com/sam_dewolf" target="_blank"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+        
+        
+          <li class="github"><a href="http://github.com/dewolfs" target="_blank"><i class="fa fa-github"></i></a></li>
+        
+        
+          <li class="linkedin"><a href="https://in.linkedin.com/in/samuel-de-wolf" target="_blank"><i class="fa fa-linkedin"></i></a></li>
+        
+      </ul>
+    </section> <!-- End Section Contact -->
+    <div class="copyright">
+      <p>2020 &copy; Sam De Wolf</p>
+    </div>
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<div class="content-box clearfix">
+  <article class="article-page">
+  <div class="page-content">
+    
+    <div class="page-cover-image">
+      <figure>
+        <img class="page-image" src=/assets/img/2020-09-10-bootstrap-grafana-with-preconfigured-datasource-dashboard-and-azure-ad-authentication.jpg alt="Bootstrap Grafana container with datasource, dashboards and Azure AD AuthN/AuthZ">
+        
+          <figcaption>Photo By Artem Sapegin on Pexels</figcaption>
+        
+      </figure>
+    </div> <!-- End Page Cover Image -->
+    
+    <div class="wrap-content">
+      <header class="header-page">
+        <h1 class="page-title">Bootstrap Grafana container with datasource, dashboards and Azure AD AuthN/AuthZ</h1>
+        <div class="page-date"><span>2020, Sep 10&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+      </header>
+      <p>Monitoring Kubernetes is vitual to understanding the health and performance of a cluster.  <strong><a href="https://grafana.com">Grafana</a></strong> is one of the leading open source, feature rich metrics dashboard and graph editors for visualizing Prometheus data.</p>
+
+<p>By checking in the Grafana configuration into our code repository and deploy it to Kubernetes via an automated build system, we ensure consistency across all Kubernetes clusters making for a more productive and reliable experience.</p>
+
+<h1 id="1-introduction">1. Introduction</h1>
+
+<p><a href="/monitoring-net-core-application-with-prometheus-on-azure-aks/">Previously</a> we have deployed Prometheus for monitoring our .NET Core application.  Today we will bootstrap Grafana installed via Helm on our Azure Kubernetes cluster.  The following configuration will be put into action:</p>
+<ul>
+  <li>configure Azure Active Directory as identity provider for Grafana</li>
+  <li>setup the Grafana datasource pointing to the Prometheus endpoint</li>
+  <li>import existing Grafana dashboards</li>
+</ul>
+
+<p>The image below gives you all the details of what we will implement today.</p>
+
+<p><img src="/assets/img/2020-09-10-design.gif" alt="design" /></p>
+
+<h1 id="2-kubernetes-cluster-deployment">2. Kubernetes cluster deployment</h1>
+
+<p>Before we start with the configuration of Grafana we first need to <a href="/deploying-azure-kubernetes-clusters-with-terraform-and-azure-devops-pipelines/">deploy our Azure Kubernetes cluster</a>.  Once all infrastructure is deployed we deploy Grafana and Prometheus.  Use the pipeline <strong>1-nginx-cert-manager-pipeline</strong> and <strong>2-cluster-grafana-prometheus-pipeline</strong> to make this happen.</p>
+
+<h1 id="3-azure-active-directory-identity-provider">3. Azure Active Directory identity provider</h1>
+
+<h2 id="31-create-azure-ad-app-registration">3.1 Create Azure AD app registration</h2>
+
+<p>In order to use Azure Active Directory as identity provider for Grafana we must first create an Azure Active Directory App registration.</p>
+
+<p><img src="/assets/img/2020-09-10-redirecturi.gif" alt="redirect" /></p>
+
+<p>As RedirectURI we specify our public DNS hostname of grafana + <strong>/login/azuread</strong>.  This will allow Azure Active Directory to redirect us once we have successfully authenticated.</p>
+
+<p>Next, we create a client secret for the Azure AD App registration.  Note down the secret because you won’t be able to retrieve it back.</p>
+
+<p><img src="/assets/img/2020-09-10-secret.gif" alt="secret" /></p>
+
+<h2 id="32-azure-ad-app-manifest">3.2 Azure AD App manifest</h2>
+
+<p>We need to add definitions for the required application roles for Grafana (Viewer, Editor, Admin).  Without this configuration all users will be assigned the Viewer role.</p>
+
+<p>Create a unique ID for each role, use uuidgen. You can find an example what to add in the AppRoles array in the code repository <strong>monitoring/grafana/approles.yaml</strong></p>
+
+<p><img src="/assets/img/2020-09-10-approles.gif" alt="approles" /></p>
+
+<p>Open the manifest of the Azure AD application and adjust the AppRoles.</p>
+
+<p><img src="/assets/img/2020-09-10-approles2.gif" alt="approles" /></p>
+
+<p>Additionally we define also the groupMembershipClaims to allow <strong>SecurityGroup</strong>.
+<img src="/assets/img/2020-09-10-manifest.gif" alt="manifest" /></p>
+
+<h2 id="33-azure-ad-app-role-assignment">3.3 Azure AD App Role assignment</h2>
+
+<p>When we login without mapping the application roles to Azure AD roles, we get default “viewer” permissions in Grafana after authentication.  As a consequence in the Grafana portal, we won’t have all options available and the Grafana log file contains the following message after login.</p>
+
+<p><img src="/assets/img/2020-09-10-default-viewer.gif" alt="default" /></p>
+
+<p>We will now assign one of the different application roles (Viewer, Editor, Admin) to one of our Azure AD user/groups.</p>
+
+<p>Open <strong>Azure Active Directory</strong> &gt; <strong>Enterprise applications</strong> &gt; search and select your app registration &gt; <strong>Assign users and groups</strong>.
+Select one of the application roles and a user/group in your Azure AD Tenant.</p>
+
+<p><img src="/assets/img/2020-09-10-select-role.gif" alt="selectrole" /></p>
+
+<p>When we now login we can see the difference, we assigned ourselves the admin role.</p>
+
+<p><img src="/assets/img/2020-09-10-role-admin.gif" alt="roleadmin" /></p>
+
+<p><em>Azure AD Application role assignment is currently not available via the Azure CLI. Upvote the request via this <a href="https://github.com/Azure/azure-sdk-for-net/issues/8794">link</a>.</em></p>
+
+<h1 id="4-grafana-bootstrap-configuration">4. Grafana bootstrap configuration</h1>
+
+<h2 id="41-azure-ad-authentication">4.1 Azure AD authentication</h2>
+
+<p>The deployment of Grafana is executed via a Helm chart.  The default configuration of a Helm chart can be overwritten using a <strong>values.yaml</strong> file. An example can be found in our repository <strong>monitoring/grafana/values.yaml</strong></p>
+
+<p><img src="/assets/img/2020-09-10-helm-values.gif" alt="helm-values" /></p>
+
+<ul>
+  <li><strong>line 17:</strong> Use <strong>auth.azuread</strong> but make sure you run Grafana version 6.7.0 or newer.</li>
+  <li><strong>line 20:</strong> Fill in the Azure AD application ID.</li>
+  <li><strong>line 21:</strong> Fill in the Azure AD client secret.</li>
+  <li><strong>line 24:</strong> Fill in the Azure AD Tenant Oauth v2 Authorize URL.</li>
+  <li><strong>line 25:</strong> Fill in the Azure AD Tenant Oauth v2 Token URL.</li>
+  <li><strong>line 26:</strong> We only allow users that are member of a specific Azure AD group to gain access to Grafana. Fill in the Azure AD group object id.</li>
+</ul>
+
+<p>The Azure AD Tenant Oauth v2 Authorize URL and Token URL can be retreived from the <strong>endpoints</strong> menu in our the Azure AD App registration.</p>
+
+<p><img src="/assets/img/2020-09-10-endpoint.gif" alt="endpoints" /></p>
+
+<h2 id="42-grafana-datasource">4.2 Grafana datasource</h2>
+
+<p>In order to configure the link between Grafana and Prometheus we specify the <strong>datasource</strong> in the <strong>values.yaml</strong> file referencing our Kubernetes Prometheus service endpoint.</p>
+
+<p><img src="/assets/img/2020-09-10-datasource.gif" alt="datasource1" /></p>
+
+<h2 id="43-grafana-dashboards">4.3 Grafana dashboards</h2>
+
+<p>Grafana is solely used for visualization of data stored in Prometheus.  One of our bootstrap objectives was to add dashboards to the Grafana instance. First we configure a <strong>dashboardProvider</strong>. Next, we add <strong>dashboards</strong> to this dashboardProvider and as last step we specify the Prometheus <strong>datasource</strong> we defined before together with the Grafana dashboard Id.</p>
+
+<p><img src="/assets/img/2020-09-10-dashboards.gif" alt="dashboard1" /></p>
+
+<h1 id="5-user-experience">5. User experience</h1>
+
+<h2 id="51-authentication">5.1 Authentication</h2>
+
+<p>The landing page of Grafana allows us to login via Azure Active Directory.</p>
+
+<p><img src="/assets/img/2020-09-10-login.gif" alt="login" /></p>
+
+<h2 id="52-datasource">5.2 Datasource</h2>
+
+<p>After authentication, we can confirm the datasource to our Prometheus endpoint.</p>
+
+<p><img src="/assets/img/2020-09-10-datasource2.gif" alt="datasource2" /></p>
+
+<h2 id="53-dashboards">5.3 Dashboards</h2>
+
+<p>And finally we verify that the dashboards are imported which we had defined in our Helm values file.</p>
+
+<p><img src="/assets/img/2020-09-10-dashboards2.gif" alt="dashboard2" /></p>
+
+<p><em>The configuration we used in this post can be found on <a href="https://github.com/dewolfs/grafana-bootstrap">https://github.com/dewolfs/grafana-bootstrap</a>.</em></p>
+
+      <div class="page-footer">
+        <div class="page-share">
+          <a href="https://twitter.com/intent/tweet?text=Bootstrap Grafana container with datasource, dashboards and Azure AD AuthN/AuthZ&url=dewolfs.github.io/bootstrapping-grafana-with-preconfigured-datasource-dashboard-and-azure-ad-authentication/" title="Share on Twitter" rel="nofollow" target="_blank">Twitter</a>
+          <a href="https://facebook.com/sharer.php?u=dewolfs.github.io/bootstrapping-grafana-with-preconfigured-datasource-dashboard-and-azure-ad-authentication/" title="Share on Facebook" rel="nofollow" target="_blank">Facebook</a>
+          <a href="https://plus.google.com/share?url=dewolfs.github.io/bootstrapping-grafana-with-preconfigured-datasource-dashboard-and-azure-ad-authentication/" title="Share on Google+" rel="nofollow" target="_blank">Google+</a>
+        </div>
+        <div class="page-tag">
+          
+            <a href="/tags#Azure" class="tag">&#35; Azure</a>
+          
+            <a href="/tags#Prometheus" class="tag">&#35; Prometheus</a>
+          
+            <a href="/tags#Grafana" class="tag">&#35; Grafana</a>
+          
+            <a href="/tags#DevOps" class="tag">&#35; DevOps</a>
+          
+            <a href="/tags#Kubernetes" class="tag">&#35; Kubernetes</a>
+          
+        </div>
+      </div>
+      <section class="comment-area">
+  <div class="comment-wrapper">
+    
+  </div>
+</section> <!-- End Comment Area -->
+
+    </div> <!-- End Wrap Content -->
+  </div> <!-- End Page Content -->
+</article> <!-- End Article Page -->
+
+</div>
+
+  </div>
+  
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-168839483-1', 'auto');
+  ga('send', 'pageview');
+</script> <!-- End Analytics -->
+
+</body>
+</html>

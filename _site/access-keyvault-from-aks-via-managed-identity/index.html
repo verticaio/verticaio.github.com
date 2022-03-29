@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Access Azure KeyVault from Azure AKS using Azure Managed Identity - Sam De Wolf | Microsoft Azure, Kubernetes & Cloud Native</title>
+
+  <!-- Edit site and author settings in `_config.yml` to make the social details your own -->
+
+    <meta content="Sam De Wolf | Microsoft Azure, Kubernetes & Cloud Native" property="og:site_name">
+  
+    <meta content="Access Azure KeyVault from Azure AKS using Azure Managed Identity" property="og:title">
+  
+  
+    <meta content="article" property="og:type">
+  
+  
+    <meta content="Azure MI" property="og:description">
+  
+  
+    <meta content="dewolfs.github.io/access-keyvault-from-aks-via-managed-identity/" property="og:url">
+  
+  
+    <meta content="2020-12-21T04:30:20+01:00" property="article:published_time">
+    <meta content="dewolfs.github.io/about/" property="article:author">
+  
+  
+    <meta content="dewolfs.github.io/assets/img/2020-12-21-managed-identity.jpg" property="og:image">
+  
+  
+    
+  
+  
+    
+    <meta content="Kubernetes" property="article:tag">
+    
+    <meta content="Azure" property="article:tag">
+    
+    <meta content="Identity" property="article:tag">
+    
+    <meta content="AzureDevOps" property="article:tag">
+    
+  
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content="@">
+    <meta name="twitter:creator" content="@sam_dewolf">
+  
+    <meta name="twitter:title" content="Access Azure KeyVault from Azure AKS using Azure Managed Identity">
+  
+  
+    <meta name="twitter:url" content="dewolfs.github.io/access-keyvault-from-aks-via-managed-identity/">
+  
+  
+    <meta name="twitter:description" content="Azure MI">
+  
+  
+    <meta name="twitter:image:src" content="dewolfs.github.io/assets/img/2020-12-21-managed-identity.jpg">
+  
+
+	<meta name="description" content="Azure MI">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta property="og:image" content="">
+	<!--<link rel="shortcut icon" href="/assets/img/favicon/favicon.ico" type="image/x-icon">
+	<link rel="apple-touch-icon" href="/assets/img/favicon/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="/assets/img/favicon/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="144x144" href="/assets/img/favicon/apple-touch-icon-144x144.png">-->
+  <!--Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#263959">
+	<!-- Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#263959">
+	<!-- iOS Safari -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="#263959">
+	<!-- Google Fonts -->
+	<link href="https://fonts.googleapis.com/css?family=PT+Serif:400,700" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet">
+	<!-- Font Awesome -->
+	<link rel="stylesheet" href="/assets/fonts/font-awesome/css/font-awesome.min.css">
+	<!-- Styles -->
+	<link rel="stylesheet" href="/assets/css/main.css">
+</head>
+
+<body>
+
+  <div class="wrapper">
+    <aside class="sidebar">
+  <header>
+    <div class="about">
+      <div class="cover-author-image">
+        <a href="/"><img src="/assets/img/bio-photo.jpg" alt="Sam De Wolf"></a>
+      </div>
+      <div class="author-name">Sam De Wolf</div>
+      <p>Focus on cloud-native application architectures using container technologies on Microsoft Azure.</p>
+    </div>
+  </header> <!-- End Header -->
+  <footer>
+    <section class="contact">
+      <h3 class="contact-title">Contact me</h3>
+      <ul>
+        
+          <li><a href="https://twitter.com/sam_dewolf" target="_blank"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+        
+        
+          <li class="github"><a href="http://github.com/dewolfs" target="_blank"><i class="fa fa-github"></i></a></li>
+        
+        
+          <li class="linkedin"><a href="https://in.linkedin.com/in/samuel-de-wolf" target="_blank"><i class="fa fa-linkedin"></i></a></li>
+        
+      </ul>
+    </section> <!-- End Section Contact -->
+    <div class="copyright">
+      <p>2020 &copy; Sam De Wolf</p>
+    </div>
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<div class="content-box clearfix">
+  <article class="article-page">
+  <div class="page-content">
+    
+    <div class="page-cover-image">
+      <figure>
+        <img class="page-image" src=/assets/img/2020-12-21-managed-identity.jpg alt="Access Azure KeyVault from Azure AKS using Azure Managed Identity">
+        
+          <figcaption>Photo By Daniel Seßler on Unsplash</figcaption>
+        
+      </figure>
+    </div> <!-- End Page Cover Image -->
+    
+    <div class="wrap-content">
+      <header class="header-page">
+        <h1 class="page-title">Access Azure KeyVault from Azure AKS using Azure Managed Identity</h1>
+        <div class="page-date"><span>2020, Dec 21&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+      </header>
+      <p>So you are running your applications in Kubernetes but do you already have a solution for managing and storing all your application secrets? How do you tell Kubernetes to use the same source of truth for secrets avoiding secrets sprawl?</p>
+
+<h1 id="1-introduction">1. Introduction</h1>
+
+<p>Applications need to handle user identities while also using their own to interact with other downstream services.  Azure Managed Identities (wrapper around service principal) for your applications enables you to securely connect to other Azure services without the need to manage and rotate secrets.</p>
+
+<p>The image below describes the solution how an application running inside an Kubernetes Pod can access secrets in an Azure KeyVault with the help of Azure Managed Identities.</p>
+
+<p><img src="/assets/img/2020-12-12-msi-design.png" alt="design" /></p>
+
+<h1 id="2-deployment">2. Deployment</h1>
+
+<p>A mandatory feature which needs to be enabled on our Kubernetes cluster is role based access control (rbac).  You can easily verify this executing the following Azure CLI command.  RBAC can only be enabled at creation time.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>az resource show --resource-group &lt;rg-aks-cluster&gt; --name &lt;aks-cluster-name&gt; --resource-type Microsoft.ContainerService/ManagedClusters --query properties.enableRBAC
+</code></pre></div></div>
+<p><img src="/assets/img/2020-12-12-rbac-enabled.png" alt="rbac-enabled" /></p>
+
+<h2 id="21-deploy-aad-pod-identity">2.1 Deploy AAD Pod Identity</h2>
+
+<p><strong><a href="https://github.com/Azure/aad-pod-identity">AAD Pod Identity</a></strong> enables Kubernetes applications to access cloud resources with Azure Active Directory.  Installing AAD Pod Identity is a straightforward process.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f https://raw.githubusercontent.com/Azure/aad-pod-identity/master/deploy/infra/deployment-rbac.yaml
+</code></pre></div></div>
+<p>As a result, the Kubernetes API is extended with some custom resource defintions (CRD).</p>
+<ul>
+  <li><strong>Managed Identity Controller (MIC)</strong> is a central Pod with permissions to query the Kubernetes API server and checks for an Azure identity mapping that corresponds to a Pod.</li>
+  <li><strong>Node-Managed Identity (NMI)</strong> server listens for Pod requests to Azure services</li>
+</ul>
+
+<p>After installing AAD Pod Identity, we verify the new API before proceding using <em>kubetctl api-versions</em>.
+<img src="/assets/img/2020-12-12-apiversions.png" alt="apiversions" /></p>
+
+<p>The NMI has a daemonset definition which will deploy a Pod on each of the AKS nodes which are part of an virtual machine scaleset.
+<img src="/assets/img/2020-12-12-daemon-nmi.png" alt="daemonset" /></p>
+
+<p>If a new Kubernetes Pod is brought online an identity will be assigned to it.  This action is visible in the logs of the Managed Identity Controller Pod.
+<img src="/assets/img/2020-12-12-mic-log.png" alt="token-kv" /></p>
+
+<p>At the start we created our Kubernetes cluster with a paramater to also create an Azure managed identity.  In order to proceed with our soltion we need to extract some details about this identity. In order to do so, use the following command:</p>
+
+<p><img src="/assets/img/2020-12-12-identity-details.png" alt="identity" /></p>
+
+<h2 id="22-deploy-crd-azure-identity-and-binding">2.2 Deploy CRD Azure Identity and binding</h2>
+
+<p>Next, we will define the Kubernetes Azure Identity and create the binding using the details of our Azure managed identity.</p>
+
+<p><img src="/assets/img/2020-12-12-podbinding.png" alt="podbinding" /></p>
+
+<ol>
+  <li>Add the <strong>name</strong> of the Managed Identity</li>
+  <li>Fill in the <strong>resourceID</strong> of the Kubernetes MC (Managed Cluster) resourcegroup</li>
+  <li>The <strong>clientId</strong> of the Kubernetes Managed Identity</li>
+  <li>Define the <strong>selector</strong> value that will be used as label by your application Pods</li>
+</ol>
+
+<p>After applying this Custom Resource Definition (CRD) to our cluster we can verify the new objects.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get azureIdentity 
+kubectl get azureIdentityBinding
+</code></pre></div></div>
+<h2 id="23-configure-rbac-for-the-aks-system-assigned-managed-identity">2.3 Configure RBAC for the AKS System-assigned managed identity</h2>
+
+<p>If you create an AKS cluster and you enable managed identity as authentication method, it will create the identity for your Azure virtual machine scale-set.
+This system-assigned managed identity is behind the covers just an Azure Active Directory service principal which you can find back in your  <strong>Azure Active Directory &gt; Enterprise Applications</strong>.</p>
+
+<p><img src="/assets/img/2020-12-12-azuread.png" alt="azuread" /></p>
+
+<p>We do have an identity now but without any role assignment.  The following commands assign different roles to the managed identity with specific scopes in order to fullfill the necessary requirements for our setup.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SUBID=$(az account show --query id -o tsv)
+CLIENTID=$(az aks show --resource-group _rg-aks-p-we-001 --name aks-p-we-001 --query identityProfile.kubeletidentity.clientId -o tsv)
+NODE_RESOURCE_GROUP=$(az aks show --resource-group _rg-aks-p-we-001 --name aks-p-we-001 --query nodeResourceGroup -o tsv)
+MANAGED_IDENTITY=$(az aks show --resource-group _rg-aks-p-we-001 --name aks-p-we-001 --query identityProfile.kubeletidentity.resourceId -o tsv)
+
+az role assignment create --role "Virtual Machine Contributor" --assignee $CLIENTID --scope /subscriptions/$SUBID/resourcegroups/$NODE_RESOURCE_GROUP
+az role assignment create --role "Managed Identity Operator" --assignee $CLIENTID --scope /subscriptions/$SUBID/resourcegroups/$NODE_RESOURCE_GROUP
+az role assignment create --role "Managed Identity Operator" --assignee $CLIENTID --scope $MANAGED_IDENTITY
+
+AKS_RESOURCE_GROUP=$(az aks show --resource-group _rg-aks-p-we-001 --name aks-p-we-001 --query resourceGroup -o tsv)
+
+az role assignment create --role "Virtual Machine Contributor" --assignee $CLIENTID --scope /subscriptions/$SUBID/resourcegroups/$AKS_RESOURCE_GROUP
+az role assignment create --role "Managed Identity Operator" --assignee $CLIENTID --scope /subscriptions/$SUBID/resourcegroups/$AKS_RESOURCE_GROUP
+</code></pre></div></div>
+
+<h2 id="24-assign-azure-keyvault-access-policies">2.4 Assign Azure KeyVault access policies</h2>
+
+<p>The last step is to provide access to the Azure KeyVault.  By default, only the creator of an Azure KeyVault has full access to secrets, keys and certificates.  In our scenario, we need to provide the secret management permissions to our System-assigned managed identity.  This will enable the Kubernetes Pods to get the secrets from the Azure Key Vault.</p>
+
+<p>Make sure you add the system assigned managed identity in the access policies of the Azure KeyVault.</p>
+
+<p><img src="/assets/img/2020-12-12-keyvault.png" alt="azuread" /></p>
+
+<h2 id="25-pipeline">2.5 Pipeline</h2>
+
+<p>We have covered a lot of configuration steps.  To standardize the deployment and avoid human error, an Azure DevOps pipeline is made available.  You can find the pipeline <strong>aks-mi-kv-pipeline.yml</strong> in the Github repo link below.</p>
+
+<h1 id="3-demo-application-deployment">3. Demo application deployment</h1>
+
+<p>To verify our solution, we will deploy the Azure AKS helloworld helm chart.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm repo add azure-samples https://azure-samples.github.io/helm-charts/
+helm install azure-samples/aks-helloworld --generate-name
+</code></pre></div></div>
+
+<p>The trick here is that the Pods of our demo application need to be labelled and should match with the selector from our PodIdentityBinding.  As a result the pod is bound to the Managed Identity</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl label pod &lt;pod-name&gt; aadpodidbinding=azure-pod-identity-binding-selector
+</code></pre></div></div>
+
+<h1 id="4-get-secret-from-inside-pod">4. Get secret from inside POD</h1>
+
+<p>To get confirmation that our setup was successfull, we need to enter into the Pod of our demo application.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>k exec -it &lt;pod-name&gt; bash
+</code></pre></div></div>
+<p>Install jq in the pod because we want to manipulate the output.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apt update 
+apt install jq -y
+</code></pre></div></div>
+<p>With the following command, we can trigger a request for an identity access token.  This URL (169.254.169.254) is only accessible from within Azure. We are requesting an access token for the KeyVault service. Now that we have this access token we can use this to obtain a secret from our KeyVault.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>token=`curl 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&amp;resource=https%3A%2F%2Fvault.azure.net' -H Metadata:true -s |jq -r '.access_token'`
+echo $token
+</code></pre></div></div>
+<p><img src="/assets/img/2020-12-12-token.png" alt="token" /></p>
+
+<p>We are looking for secrets from our Azure Keyvault (kvpwe001) and more specifically the <strong>password</strong> secret.  The token from our previous step is used in the authorization header as a bearer token.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>value=`curl https://kvpwe001.vault.azure.net//secrets/password?api-version=2016-10-01 -H "Authorization: Bearer ${token}" -s | jq -r ".value"`
+echo $value
+</code></pre></div></div>
+<p>We don’t need to pass any credentials thanks to Aad Pod Identity configuration. Our request (=Pod with correct Azure Identity label) came from within Azure and we have setup the permission which identity can access the KeyVault.
+<img src="/assets/img/2020-12-12-secret.png" alt="token" /></p>
+
+<h1 id="5-troubleshooting">5. Troubleshooting</h1>
+
+<p>The following commands will help you in case you run into issues:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get AzureIdentity -A -o yaml
+kubectl get AzureIdentityBinding -A -o yaml
+kubectl get AzureAssignedIdentities -A -o yaml # this will show which Pod(s) has been assigned to the managed identity
+kubectl get AzureAssignedIdentities -A -o jsonpath='{range .items[*]}{@.spec.pod}{"\t"}{@.metadata.namespace}{"\t"}{@.spec.azureIdentityRef.metadata.name}{"\n"}'
+</code></pre></div></div>
+
+<p><em>The configuration we used in this post can be found on <a href="https://github.com/dewolfs/aks-managedIdentity-kv">https://github.com/dewolfs/aks-managedIdentity-kv</a>.</em></p>
+
+      <div class="page-footer">
+        <div class="page-share">
+          <a href="https://twitter.com/intent/tweet?text=Access Azure KeyVault from Azure AKS using Azure Managed Identity&url=dewolfs.github.io/access-keyvault-from-aks-via-managed-identity/" title="Share on Twitter" rel="nofollow" target="_blank">Twitter</a>
+          <a href="https://facebook.com/sharer.php?u=dewolfs.github.io/access-keyvault-from-aks-via-managed-identity/" title="Share on Facebook" rel="nofollow" target="_blank">Facebook</a>
+          <a href="https://plus.google.com/share?url=dewolfs.github.io/access-keyvault-from-aks-via-managed-identity/" title="Share on Google+" rel="nofollow" target="_blank">Google+</a>
+        </div>
+        <div class="page-tag">
+          
+            <a href="/tags#Kubernetes" class="tag">&#35; Kubernetes</a>
+          
+            <a href="/tags#Azure" class="tag">&#35; Azure</a>
+          
+            <a href="/tags#Identity" class="tag">&#35; Identity</a>
+          
+            <a href="/tags#AzureDevOps" class="tag">&#35; AzureDevOps</a>
+          
+        </div>
+      </div>
+      <section class="comment-area">
+  <div class="comment-wrapper">
+    
+  </div>
+</section> <!-- End Comment Area -->
+
+    </div> <!-- End Wrap Content -->
+  </div> <!-- End Page Content -->
+</article> <!-- End Article Page -->
+
+</div>
+
+  </div>
+  
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-168839483-1', 'auto');
+  ga('send', 'pageview');
+</script> <!-- End Analytics -->
+
+</body>
+</html>

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Enforce and validate security posture with OPA Gatekeeper on Azure AKS - Sam De Wolf | Microsoft Azure, Kubernetes & Cloud Native</title>
+
+  <!-- Edit site and author settings in `_config.yml` to make the social details your own -->
+
+    <meta content="Sam De Wolf | Microsoft Azure, Kubernetes & Cloud Native" property="og:site_name">
+  
+    <meta content="Enforce and validate security posture with OPA Gatekeeper on Azure AKS" property="og:title">
+  
+  
+    <meta content="article" property="og:type">
+  
+  
+    <meta content="Enforce and validate security posture with OPA Gatekeeper on Azure AKS" property="og:description">
+  
+  
+    <meta content="dewolfs.github.io/enforce-and-validate-security-posture-with-opa-gatekeeper-on-azure-aks/" property="og:url">
+  
+  
+    <meta content="2020-09-28T13:30:20+02:00" property="article:published_time">
+    <meta content="dewolfs.github.io/about/" property="article:author">
+  
+  
+    <meta content="dewolfs.github.io/assets/img/2020-09-28-open-policy-agent.jpg" property="og:image">
+  
+  
+    
+  
+  
+    
+    <meta content="Kubernetes" property="article:tag">
+    
+    <meta content="Azure" property="article:tag">
+    
+    <meta content="OPA" property="article:tag">
+    
+    <meta content="Gatekeeper" property="article:tag">
+    
+    <meta content="AKS" property="article:tag">
+    
+  
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content="@">
+    <meta name="twitter:creator" content="@sam_dewolf">
+  
+    <meta name="twitter:title" content="Enforce and validate security posture with OPA Gatekeeper on Azure AKS">
+  
+  
+    <meta name="twitter:url" content="dewolfs.github.io/enforce-and-validate-security-posture-with-opa-gatekeeper-on-azure-aks/">
+  
+  
+    <meta name="twitter:description" content="Enforce and validate security posture with OPA Gatekeeper on Azure AKS">
+  
+  
+    <meta name="twitter:image:src" content="dewolfs.github.io/assets/img/2020-09-28-open-policy-agent.jpg">
+  
+
+	<meta name="description" content="Enforce and validate security posture with OPA Gatekeeper on Azure AKS">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta property="og:image" content="">
+	<!--<link rel="shortcut icon" href="/assets/img/favicon/favicon.ico" type="image/x-icon">
+	<link rel="apple-touch-icon" href="/assets/img/favicon/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="/assets/img/favicon/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="144x144" href="/assets/img/favicon/apple-touch-icon-144x144.png">-->
+  <!--Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#263959">
+	<!-- Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#263959">
+	<!-- iOS Safari -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="#263959">
+	<!-- Google Fonts -->
+	<link href="https://fonts.googleapis.com/css?family=PT+Serif:400,700" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet">
+	<!-- Font Awesome -->
+	<link rel="stylesheet" href="/assets/fonts/font-awesome/css/font-awesome.min.css">
+	<!-- Styles -->
+	<link rel="stylesheet" href="/assets/css/main.css">
+</head>
+
+<body>
+
+  <div class="wrapper">
+    <aside class="sidebar">
+  <header>
+    <div class="about">
+      <div class="cover-author-image">
+        <a href="/"><img src="/assets/img/bio-photo.jpg" alt="Sam De Wolf"></a>
+      </div>
+      <div class="author-name">Sam De Wolf</div>
+      <p>Focus on cloud-native application architectures using container technologies on Microsoft Azure.</p>
+    </div>
+  </header> <!-- End Header -->
+  <footer>
+    <section class="contact">
+      <h3 class="contact-title">Contact me</h3>
+      <ul>
+        
+          <li><a href="https://twitter.com/sam_dewolf" target="_blank"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+        
+        
+          <li class="github"><a href="http://github.com/dewolfs" target="_blank"><i class="fa fa-github"></i></a></li>
+        
+        
+          <li class="linkedin"><a href="https://in.linkedin.com/in/samuel-de-wolf" target="_blank"><i class="fa fa-linkedin"></i></a></li>
+        
+      </ul>
+    </section> <!-- End Section Contact -->
+    <div class="copyright">
+      <p>2020 &copy; Sam De Wolf</p>
+    </div>
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<div class="content-box clearfix">
+  <article class="article-page">
+  <div class="page-content">
+    
+    <div class="page-cover-image">
+      <figure>
+        <img class="page-image" src=/assets/img/2020-09-28-open-policy-agent.jpg alt="Enforce and validate security posture with OPA Gatekeeper on Azure AKS">
+        
+          <figcaption>Photo By Valiphotos on Pexels</figcaption>
+        
+      </figure>
+    </div> <!-- End Page Cover Image -->
+    
+    <div class="wrap-content">
+      <header class="header-page">
+        <h1 class="page-title">Enforce and validate security posture with OPA Gatekeeper on Azure AKS</h1>
+        <div class="page-date"><span>2020, Sep 28&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+      </header>
+      <p>Compliance, governance, and security are nonfunctional requirements that every system needs to satisfy. Kubernetes clusters are no different.  We need something to build preventative controls to stop unwanted changes in our clusters. We can also shift the controls left, into the our CI/CD automation, evaluating changes before they are pushed.</p>
+
+<h1 id="1-introduction">1. Introduction</h1>
+
+<p><img src="/assets/img/2020-09-28-logo.png" alt="image" style="float: left" /></p>
+
+<p>Organizations need the ability to apply rules to their workloads and services, at scale and distinct from the development of those services. Policies and policy enablement provide those governance capabilities with declarative approaches.  <strong><a href="https://github.com/open-policy-agent/gatekeeper">Open Policy Agent (OPA) Gatekeeper</a></strong> integrates with Kubernetes and is able to provide the right guardrails to enforce structure and keep your deployments running smoothly.</p>
+
+<p>Gatekeeper brings a structured schematized version via constraint templates and constraints using Kubernetes.  Rego is the language that OPA and Gatekeeper support to validate a request to the Kubernetes cluster.</p>
+
+<p>Policies are essential to the long-term success of an organization, because they encode important knowledge about how to comply with legal requirements, avoid repeating mistakes, and so on.</p>
+
+<p>For example, a custom policy could be that developers are ONLY allowed to reference container images in their deployments from your own private registry. Other could be, Developers must have certain labels be present in all deployment definitions identifying the business unit to chargeback to.</p>
+
+<p><img src="/assets/img/2020-09-28-gatekeeper-design.png" alt="install" /></p>
+
+<p><em>Credits: <a href="https://kubernetes.io/blog/2019/08/06/opa-gatekeeper-policy-and-governance-for-kubernetes/">https://kubernetes.io/blog/2019/08/06/opa-gatekeeper-policy-and-governance-for-kubernetes</a></em></p>
+
+<p>A constraint template contains the Rego signature, it basically contains all the logic of what happens when.  Gatekeeper executes these constraints.  If the rule matches, the constraint is violated.</p>
+
+<p>Gatekeeper implements Open Policy Agent (OPA) as a set of Kubernetes Custom Resource Definitions (CRDs).  The CRDs are watched by OPA via Gatekeeper and it watches through the API server all of the objects that gets created through the Kubernetes API server.  This is a cloud-native way of enforcing policies.</p>
+
+<h1 id="2-installation">2. Installation</h1>
+
+<p>To install the latest version of Gatekeeper, run the following command:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f https://raw.githubusercontent.com/open-policy-agent/gatekeeper/master/deploy/gatekeeper.yaml
+</code></pre></div></div>
+<p>The following Kubernetes objects are created:</p>
+
+<p><img src="/assets/img/2020-09-28-install.gif" alt="install" /></p>
+
+<p>In the logs of the gatekeeper-controller-manager container you can find back the startup of the different roles:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl logs -f gatekeeper-controller-manager-6dff56479c-46sr8 -n gatekeeper-system
+</code></pre></div></div>
+
+<p>Part of the installation is the admission control webhook.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get validatingwebhookconfiguration
+kubectl get validatingwebhookconfiguration gatekeeper-validating-webhook-configuration -o yaml
+</code></pre></div></div>
+<p>The configuration of the webhook intercepts any <strong>create</strong> or <strong>update</strong> operation on every <strong>apiGroup</strong> of every <strong>apiVersion</strong> on every <strong>resource</strong>.  All these actions will be passed to the <strong>gatekeeper-webhook-service</strong>.</p>
+
+<p><img src="/assets/img/2020-09-28-webhook.gif" alt="webhook" /></p>
+
+<h1 id="3-example-1---required-labels-on-namespace">3. Example 1 - Required labels on namespace</h1>
+
+<p>Now that we have Gatekeeper installed, we will try out a few good and bad configurations.  For our first example we want to enforce that labels are applied to the Kubernetes namespace. At the end of this blogpost you can find the link to the repo containing all the code used in this blogpost.</p>
+
+<h2 id="31-constraint-template">3.1 Constraint template</h2>
+
+<p>We have defined a constraint template which contains the Rego policy to verify the existance of Kubernetes labels.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f template/k8srequiredlabels_template.yaml
+</code></pre></div></div>
+
+<p>To view all the constraint templates and the individual details use the following commands:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get constrainttemplates.templates.gatekeeper.sh -n gatekeeper-system
+kubectl get constrainttemplates k8srequiredlabels -n gatekeeper-system -o yaml
+</code></pre></div></div>
+
+<h2 id="32-constraint">3.2 Constraint</h2>
+
+<p>The constraint itself contains the parameters that are used in collaboration with the constraint template.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f constraint/owner_must_be_provided.yaml
+</code></pre></div></div>
+
+<h2 id="33-results">3.3 Results</h2>
+
+<p>Now that we have our Gatekeeper constraint in place, we are going to create a new Kubernetes namespace without any label.  The error message is clearly stating why the deployment is failed and also which constraint is blocking this.</p>
+
+<p><img src="/assets/img/2020-09-28-label-bad.gif" alt="webhook" /></p>
+
+<p>If we provide a Kubernetes manifest with a label, the namespace gets created without errors.</p>
+
+<p><img src="/assets/img/2020-09-28-label-good.gif" alt="webhook" /></p>
+
+<p>Now that we have the constraint in-place inside our Kubernetes cluster we want to get some knowledge on how many violations we count.  The constraint contains a violations section, describing the namespaces that are not compliant.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl describe k8srequiredlabels.constraints.gatekeeper.sh 
+</code></pre></div></div>
+
+<p><img src="/assets/img/2020-09-28-label-violations.gif" alt="webhook" /></p>
+
+<h1 id="4-example-2---allowed-container-repository">4. Example 2 - Allowed container repository</h1>
+
+<p>In the second example we will configure a policy to only allow pull container images from a known container registry.</p>
+
+<h2 id="41-template">4.1 Template</h2>
+
+<p>First we deploy the constraint via the following command:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f template/k8sallowedrepos_template.yaml
+</code></pre></div></div>
+<p>To view the constraint templates and the individual details use the following commands:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get constrainttemplates.templates.gatekeeper.sh -n gatekeeper-system
+kubectl get constrainttemplates k8sallowedrepos -n gatekeeper-system -o yaml
+</code></pre></div></div>
+
+<h2 id="42-constraint">4.2 Constraint</h2>
+
+<p>The constraint itself contains the parameters that are used in collaboration with the constraint template.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f constraint/limit_repo.yaml
+</code></pre></div></div>
+
+<h2 id="43-results">4.3 Results</h2>
+
+<p>When we launch the Kubernetes deployment which is referencing a public container repository, it wil get created without error.  However, when we verify our running pods in the production namespace, we can’t find any pods. When we verify the events in the namespace, we understand that the container repository defined in our Kubernetes manifest is not allowed.</p>
+
+<p><img src="/assets/img/2020-09-28-repo-bad.gif" alt="webhook" /></p>
+
+<p>If we now execute a deployment where we reference to a private container repository allowed by our constraint, our deployments gets successfully deployed and our pod are also created.</p>
+
+<p><img src="/assets/img/2020-09-28-repo-good.gif" alt="webhook" /></p>
+
+<p>Looking to the details of the allowed repository constraint we can see how many violations exist.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl describe k8sallowedrepos.constraints.gatekeeper.sh 
+</code></pre></div></div>
+<h2 id="5-example-3---container-limits">5. Example 3 - Container limits</h2>
+
+<p>For our third example we want to make sure that each Kubernetes deployment has container resource limits set in the manifest file.</p>
+
+<h2 id="51-template">5.1 Template</h2>
+
+<p>First we deploy the constraint via the following command:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f template/k8scontainerlimits_template.yaml
+</code></pre></div></div>
+<p>To view the constraint templates and the individual details use the following commands:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get constrainttemplates.templates.gatekeeper.sh -n gatekeeper-system
+kubectl get constrainttemplates k8scontainerlimits -n gatekeeper-system -o yaml
+</code></pre></div></div>
+
+<h2 id="52-constraint">5.2 Constraint</h2>
+
+<p>The constraint itself contains the parameters that are used in collaboration with the constraint template.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f constraint/containers_must_be_limited.yaml
+</code></pre></div></div>
+<h2 id="53-results">5.3 Results</h2>
+
+<p>First we apply a Kubernetes deployment with no container resource limits.  The error message clearly indicates what the problem is.</p>
+
+<p><img src="/assets/img/2020-09-28-limit-bad.gif" alt="webhook" /></p>
+
+<p>If we now execute a deployment with container resource limits, the deployment and pod get deployment without a problem.</p>
+
+<p><img src="/assets/img/2020-09-28-limit-good.gif" alt="webhook" /></p>
+
+<h1 id="6-dryrun">6. Dryrun</h1>
+
+<p>If we have a brownfield cluster with a lot of resources and we want to bring the cluster into compliance, we can start with the enforcement action of dryrun.  This will allows us to get visibility and pass through all policies resulting in finding out what is out of compliance and take action to fix things.<br />
+Add <strong>constraints.spec.enforcementAction</strong> to enable dryrun and to see the state of compliance of the cluster.</p>
+
+<p><img src="/assets/img/2020-09-28-dryrun.gif" alt="dryrun" /></p>
+
+<h1 id="7-monitoring">7. Monitoring</h1>
+
+<p>Prometheus is supported as backend for metrics of Gatekeeper.  There are metrics for:</p>
+<ul>
+  <li>violations per enforcement action</li>
+  <li>last audit timestamp</li>
+  <li>audit duration</li>
+  <li>total number of constraint templates and constraints</li>
+</ul>
+
+<p>In order to enable Prometheus to scrape the metrics of Gatekeeper, we have to add the following Kubernetes annotations to the deployment of the <strong>controller manager</strong>.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl annotate deploy gatekeeper-controller-manager -n gatekeeper-system prometheus.io/port=8888
+kubectl annotate deploy gatekeeper-controller-manager -n gatekeeper-system prometheus.io/scrape=true
+kubectl annotate deploy gatekeeper-controller-manager -n gatekeeper-system container.seccomp.security.alpha.kubernetes.io/manager=runtime/default
+</code></pre></div></div>
+
+<p>We repeat the same operation for the <strong>audit</strong> deployment of Gatekeeper.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl annotate deploy gatekeeper-audit -n gatekeeper-system prometheus.io/port=8888
+kubectl annotate deploy gatekeeper-audit -n gatekeeper-system prometheus.io/scrape=true
+kubectl annotate deploy gatekeeper-audit -n gatekeeper-system container.seccomp.security.alpha.kubernetes.io/manager=runtime/default
+</code></pre></div></div>
+
+<p>As last, we need to add the targets of Gatekeeper to the Prometheus configuration.  The Prometheus configration can be adjusted via the Kubernetes configmap.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl edit cm prometheus-server
+</code></pre></div></div>
+
+<p>Add the following code block to the static configuration file.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    - job_name: gkaudit
+      static_configs:
+      - targets:
+        - &lt;gatekeeper_audit_service_ip&gt;:8888
+    - job_name: gkmanager
+      static_configs:
+      - targets:
+        - &lt;gatekeeper_manager_service_ip&gt;:8888
+</code></pre></div></div>
+
+<p>When we open the Prometheus UI, we are able to select the Gatekeeper metrics.  Prometheus Alertmanager can be configured to send a notification when a threshold is breached.</p>
+
+<p><img src="/assets/img/2020-09-28-prometheus.gif" alt="prometheus" /></p>
+
+<h1 id="8-conftest-in-cicd">8. Conftest in CI/CD</h1>
+
+<p>Gatekeeper templates and constraints make sure that requests are validated against Rego policies before anything happens inside your Kubernetes cluster.  Additionally we can make sure that we already scan the Kubernetes manifests in our repository to verify if a violation would occur at deployment time.</p>
+
+<p><a href="https://www.conftest.dev/">Conftest</a> helps you write tests against structured configuration data.</p>
+
+<p>In our repository, we have defined an Azure DevOps pipeline <strong>1-conftest.yml</strong> which runs on a scheduled daily basis during the night.  The pipeline contains executes a scan of the Kubernetes manifests against the Rego policies.</p>
+
+<p><img src="/assets/img/2020-09-28-pipeline-fail.gif" alt="pipeline-fail" /></p>
+
+<p><img src="/assets/img/2020-09-28-pipeline-success.gif" alt="pipeline-success" /></p>
+
+<p><em>The configuration we used in this post can be found on <a href="https://github.com/dewolfs/opa-gatekeeper-conftest">https://github.com/dewolfs/opa-gatekeeper-conftest</a>.</em></p>
+
+      <div class="page-footer">
+        <div class="page-share">
+          <a href="https://twitter.com/intent/tweet?text=Enforce and validate security posture with OPA Gatekeeper on Azure AKS&url=dewolfs.github.io/enforce-and-validate-security-posture-with-opa-gatekeeper-on-azure-aks/" title="Share on Twitter" rel="nofollow" target="_blank">Twitter</a>
+          <a href="https://facebook.com/sharer.php?u=dewolfs.github.io/enforce-and-validate-security-posture-with-opa-gatekeeper-on-azure-aks/" title="Share on Facebook" rel="nofollow" target="_blank">Facebook</a>
+          <a href="https://plus.google.com/share?url=dewolfs.github.io/enforce-and-validate-security-posture-with-opa-gatekeeper-on-azure-aks/" title="Share on Google+" rel="nofollow" target="_blank">Google+</a>
+        </div>
+        <div class="page-tag">
+          
+            <a href="/tags#Kubernetes" class="tag">&#35; Kubernetes</a>
+          
+            <a href="/tags#Azure" class="tag">&#35; Azure</a>
+          
+            <a href="/tags#OPA" class="tag">&#35; OPA</a>
+          
+            <a href="/tags#Gatekeeper" class="tag">&#35; Gatekeeper</a>
+          
+            <a href="/tags#AKS" class="tag">&#35; AKS</a>
+          
+        </div>
+      </div>
+      <section class="comment-area">
+  <div class="comment-wrapper">
+    
+  </div>
+</section> <!-- End Comment Area -->
+
+    </div> <!-- End Wrap Content -->
+  </div> <!-- End Page Content -->
+</article> <!-- End Article Page -->
+
+</div>
+
+  </div>
+  
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-168839483-1', 'auto');
+  ga('send', 'pageview');
+</script> <!-- End Analytics -->
+
+</body>
+</html>

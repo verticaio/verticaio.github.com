@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Monitoring .Net Core Application with Prometheus on Azure AKS - Sam De Wolf | Microsoft Azure, Kubernetes & Cloud Native</title>
+
+  <!-- Edit site and author settings in `_config.yml` to make the social details your own -->
+
+    <meta content="Sam De Wolf | Microsoft Azure, Kubernetes & Cloud Native" property="og:site_name">
+  
+    <meta content="Monitoring .Net Core Application with Prometheus on Azure AKS" property="og:title">
+  
+  
+    <meta content="article" property="og:type">
+  
+  
+    <meta content="Monitoring .Net Core Application with Prometheus on Azure AKS" property="og:description">
+  
+  
+    <meta content="dewolfs.github.io/monitoring-net-core-application-with-prometheus-on-azure-aks/" property="og:url">
+  
+  
+    <meta content="2020-07-27T09:33:20+02:00" property="article:published_time">
+    <meta content="dewolfs.github.io/about/" property="article:author">
+  
+  
+    <meta content="dewolfs.github.io/assets/img/2020-07-27-monitoring-net-core-application-with-prometheus-on-azure-aks.jpg" property="og:image">
+  
+  
+    
+  
+  
+    
+    <meta content="Azure" property="article:tag">
+    
+    <meta content="Prometheus" property="article:tag">
+    
+    <meta content="DotNetCore" property="article:tag">
+    
+    <meta content="Docker" property="article:tag">
+    
+    <meta content="Kubernetes" property="article:tag">
+    
+  
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content="@">
+    <meta name="twitter:creator" content="@sam_dewolf">
+  
+    <meta name="twitter:title" content="Monitoring .Net Core Application with Prometheus on Azure AKS">
+  
+  
+    <meta name="twitter:url" content="dewolfs.github.io/monitoring-net-core-application-with-prometheus-on-azure-aks/">
+  
+  
+    <meta name="twitter:description" content="Monitoring .Net Core Application with Prometheus on Azure AKS">
+  
+  
+    <meta name="twitter:image:src" content="dewolfs.github.io/assets/img/2020-07-27-monitoring-net-core-application-with-prometheus-on-azure-aks.jpg">
+  
+
+	<meta name="description" content="Monitoring .Net Core Application with Prometheus on Azure AKS">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta property="og:image" content="">
+	<!--<link rel="shortcut icon" href="/assets/img/favicon/favicon.ico" type="image/x-icon">
+	<link rel="apple-touch-icon" href="/assets/img/favicon/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="/assets/img/favicon/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="144x144" href="/assets/img/favicon/apple-touch-icon-144x144.png">-->
+  <!--Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#263959">
+	<!-- Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#263959">
+	<!-- iOS Safari -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="#263959">
+	<!-- Google Fonts -->
+	<link href="https://fonts.googleapis.com/css?family=PT+Serif:400,700" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet">
+	<!-- Font Awesome -->
+	<link rel="stylesheet" href="/assets/fonts/font-awesome/css/font-awesome.min.css">
+	<!-- Styles -->
+	<link rel="stylesheet" href="/assets/css/main.css">
+</head>
+
+<body>
+
+  <div class="wrapper">
+    <aside class="sidebar">
+  <header>
+    <div class="about">
+      <div class="cover-author-image">
+        <a href="/"><img src="/assets/img/bio-photo.jpg" alt="Sam De Wolf"></a>
+      </div>
+      <div class="author-name">Sam De Wolf</div>
+      <p>Focus on cloud-native application architectures using container technologies on Microsoft Azure.</p>
+    </div>
+  </header> <!-- End Header -->
+  <footer>
+    <section class="contact">
+      <h3 class="contact-title">Contact me</h3>
+      <ul>
+        
+          <li><a href="https://twitter.com/sam_dewolf" target="_blank"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+        
+        
+          <li class="github"><a href="http://github.com/dewolfs" target="_blank"><i class="fa fa-github"></i></a></li>
+        
+        
+          <li class="linkedin"><a href="https://in.linkedin.com/in/samuel-de-wolf" target="_blank"><i class="fa fa-linkedin"></i></a></li>
+        
+      </ul>
+    </section> <!-- End Section Contact -->
+    <div class="copyright">
+      <p>2020 &copy; Sam De Wolf</p>
+    </div>
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<div class="content-box clearfix">
+  <article class="article-page">
+  <div class="page-content">
+    
+    <div class="page-cover-image">
+      <figure>
+        <img class="page-image" src=/assets/img/2020-07-27-monitoring-net-core-application-with-prometheus-on-azure-aks.jpg alt="Monitoring .Net Core Application with Prometheus on Azure AKS">
+        
+          <figcaption>Photo By Andreas Haslinger on Unsplash</figcaption>
+        
+      </figure>
+    </div> <!-- End Page Cover Image -->
+    
+    <div class="wrap-content">
+      <header class="header-page">
+        <h1 class="page-title">Monitoring .Net Core Application with Prometheus on Azure AKS</h1>
+        <div class="page-date"><span>2020, Jul 27&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+      </header>
+      <p>Kubernetes is a powerful system to build, operate and grow a cloud native architecture.  To stay on top of what’s happening across your pods that are dynamically scheduled we need a system capable of monitoring the entire stack while enabling users to drill down from a global view to individual instances.</p>
+
+<p>When deploying applications in Kubernetes we should setup a proper instrumentation to gather insights and solve general monitoring needs.</p>
+
+<h1 id="1-introduction">1. Introduction</h1>
+
+<p><img src="/assets/img/2020-07-27-logo.png" alt="image" style="float: left" /></p>
+
+<p>Prometheus has become the defacto monitoring and alerting system for cloud native applications with systems like Kubernetes natively exposing Prometheus metrics.  It’s an open-source metric monitoring solution and time series database that is part of the Cloud Native Computing Foundation (<a href="https://www.cncf.io/">CNCF</a>).</p>
+
+<p>The Prometheus selling points are:</p>
+
+<ul>
+  <li>efficient and simple to operate</li>
+  <li>works well for monitoring dynamic environments since it integrates with different kinds of service discovery</li>
+  <li>powerful query language</li>
+  <li>designed with microservices and distributed architecture in mind</li>
+</ul>
+
+<p>The image below gives you an idea of what we will build today.
+<img src="/assets/img/2020-07-27-design.gif" alt="dotnet" /></p>
+
+<h1 id="2-create-net-core-application">2. Create .NET Core Application</h1>
+
+<p>To experience the capabilities of Prometheus we need to use it in combination with an application.  We are going to create a .NET Core application and setup Prometheus scraping a custom metric.  The application and Prometheus will be running as a container inside an Azure AKS cluster.</p>
+
+<p>From VSCode we create our new .NET Core application “the bank”.</p>
+
+<p><img src="/assets/img/2020-07-27-dotnet.gif" alt="dotnet" /></p>
+
+<p>When we run the application we can view the default .NET Core application homepage.</p>
+
+<p><img src="/assets/img/2020-07-27-dotnet2.png" alt="dotnet" /></p>
+
+<h2 id="21-add-net-core-prometheus-library">2.1 Add .NET Core Prometheus library</h2>
+
+<p>Now that we have our application running we need to add the Prometheus .NET client libraries.  These can be found on the <a href="https://www.nuget.org/">nuget</a> website.</p>
+
+<p><img src="/assets/img/2020-07-27-nuget.png" alt="nuget" /></p>
+
+<p>We use the commands below to add the two client libraries to our application.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet add package prometheus-net <span class="nt">--version</span> 4.0.0-pre-000134-2fea549
+dotnet add package prometheus-net.AspNetCore <span class="nt">--version</span> 4.0.0-pre-000134-2fea549
+</code></pre></div></div>
+
+<p>After we added both packages, we can view them in the configuration file of our application (thebank.csproj).</p>
+
+<p><img src="/assets/img/2020-07-27-packages.gif" alt="packages" /></p>
+
+<p>At this point we can start exporting our application metrics. This is done from the <strong>Startup.cs</strong> class.</p>
+
+<p>To enable the .NET Core Prometheus packages we added before, we add the following line at the top of the file.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>using Prometheus<span class="p">;</span>
+</code></pre></div></div>
+
+<p>Next, we are going to add a method which is made available through the .NET Core Prometheus package.  This will expose the Prometheus metrics on the <strong>/metrics</strong> URL.  Add <strong>endpoints.MapMetrics()</strong> to the endpoint configuration inside <strong>app.UseEndpoints</strong>.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public void Configure<span class="o">(</span>IApplicationBuilder app, ...<span class="o">)</span>
+<span class="o">{</span>
+    app.UseEndpoints<span class="o">(</span>endpoints <span class="o">=&gt;</span>
+    <span class="o">{</span>
+        // ...
+        endpoints.MapMetrics<span class="o">()</span><span class="p">;</span>
+    <span class="o">})</span>
+<span class="o">}</span>
+</code></pre></div></div>
+<p>If we run the application again, we can right away view the metrics page.</p>
+
+<p><img src="/assets/img/2020-07-27-metrics.png" alt="nuget" /></p>
+
+<p>These metrics are out-of-the-box available through the usage of the nuget packages.  We will now extend the metrics with a custom counter which will count the views of our webpage.</p>
+
+<p>Below you can view the changes we have made to the file <strong>Controllers&gt;HomeControllers.cs</strong>.</p>
+
+<p><img src="/assets/img/2020-07-27-metrics-counter.png" alt="nuget" /></p>
+
+<ul>
+  <li><strong>line 10:</strong> We add the Prometheus .NET client library.</li>
+  <li><strong>line 16:</strong> The custom counter has a name and description which will be visible on the metrics page.</li>
+  <li><strong>line 26:</strong> Each time we have a new visitor on our index page we want to increase the value of our custom counter.</li>
+</ul>
+
+<p>That’s all what is necessary to configure a custom counter.  If we run the application again, we will be able to track the visitor counts.</p>
+
+<p><img src="/assets/img/2020-07-27-metrics-page-counter.png" alt="nuget" /></p>
+
+<p>In the next sections we will containerize our application and deploy it on the Azure AKS cluster. Eventually we want Prometheus to scrape the metrics of our .NET Core application.</p>
+
+<h1 id="3-create-docker-container-image">3. Create Docker container image</h1>
+
+<p>In our code-repository, you will find the <strong>Dockerfile</strong> in the folder <strong>thebank</strong>.  We are using a multi-stage Dockerfile.  In the first stage we use the SDK image to build and publish our application.  This image contains more tooling and is therefor larger than the ASP.NET Core image.  The <strong>3.1-buster-slim</strong> tag indicates two things:</p>
+<ul>
+  <li><strong>3.1</strong> defines that the images is running .NET Core 3.1</li>
+  <li><strong>buster-slim</strong> refers to the Debian Linux variant the image is running</li>
+</ul>
+
+<h1 id="4-setup-azure-devops-pipeline">4. Setup Azure DevOps pipeline</h1>
+
+<p>Via an Azure DevOps pipeline we will automate the build and push process of the docker container to an Azure Container Registry.  Besides that we also want to deploy our application in our Azure AKS cluster and install Prometheus using Helm.</p>
+
+<p><strong><a href="https://www.helm.sh">Helm</a></strong> is a package manager that provides the tools to find, share, install and manage software in Kubernetes.</p>
+
+<h2 id="41-build--push-to-container-registry">4.1 Build &amp; push to container registry</h2>
+
+<p>Our first Azure DevOps pipeline <strong>1-thebank-app-pipeline.yml</strong> will build and push the container image to our Azure Container Registry.  First we create our Azure AKS cluster and Azure Container Registry with Terraform like we described in our previous post <a href="/deploying-azure-kubernetes-clusters-with-terraform-and-azure-devops-pipelines/">Deploying Azure Kubernetes clusters with Terraform and Azure DevOps pipelines</a>.</p>
+
+<p>The <strong>Docker@2</strong> task below, combines the build and push action.</p>
+
+<p><img src="/assets/img/2020-07-27-pipeline.gif" alt="nuget" /></p>
+
+<h2 id="42-kubernetes-deployment-manifest-net-core-app">4.2 Kubernetes deployment manifest .NET Core App</h2>
+
+<p>The folder <strong>manifests</strong> in the root directory of our Azure DevOps project contains our Kubernetes configuration files.  Because we have not exposed our .NET Core application to the public internet we can only verify our application from our workstation by using port-forwarding.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Get access to the Azure AKS cluster</span>
+az aks get-credentials <span class="nt">--resource-group</span> &lt;aks_resource_group&gt; <span class="nt">--name</span> &lt;aks_cluster_name&gt;
+
+<span class="c"># Setup port-forwarding to our application POD on port 80</span>
+kubectl port-forward &lt;pod-name&gt; 80:80 <span class="nt">--namespace</span> &lt;application_namespace&gt;
+</code></pre></div></div>
+
+<p><img src="/assets/img/2020-07-27-port-forward.gif" alt="nuget" /></p>
+
+<h2 id="43-kubernetes-deployment-prometheus">4.3 Kubernetes deployment Prometheus</h2>
+
+<p>Our second Azure DevOps pipeline <strong>2-cluster-monitoring-infra-pipeline.yml</strong> instructs the deployment of Prometheus via Helm.  The Prometheus Helm chart contains a default server configuration that we can view using the following command:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Exec into our Prometheus server container and display the prometheus.yml file</span>
+kubectl <span class="nb">exec</span> <span class="nt">-it</span> &lt;prometheus_pod&gt; <span class="nt">--namespace</span> &lt;monitoring_namespace&gt; <span class="nt">--</span> <span class="nb">cat</span> /etc/config/prometheus.yml
+</code></pre></div></div>
+
+<p><img src="/assets/img/2020-07-27-default.png" alt="nuget" /></p>
+
+<p>We want to keep the existing configuration but also make the necessary changes to scrape the metrics of our <strong>thebank</strong> .NET Core application.  By customizing aspects of the deployment we override specific values which are defined in a <strong>values.yaml</strong> file.</p>
+
+<p>In the <strong>scrape_configs</strong> section we add an additional job for our .NET Core application.  Prometheus and our application are living in separate namespaces.  If we add the service endpoint of our application we need to use the full cluster DNS name <strong>(&lt;servicename&gt;.&lt;namespaces&gt;.svc.cluster.local)</strong> for discovery.</p>
+
+<p><img src="/assets/img/2020-07-27-prometheus-values.gif" alt="values" /></p>
+
+<h1 id="5-verify-custom-metric">5. Verify custom metric</h1>
+
+<p>When we browse to the Prometheus homepage (using kubectl port-forward) and click in the menu <strong>Status&gt;Configuration</strong> we can view the Prometheus configuration file which was build based on our Helm <strong>values.yaml</strong> file.</p>
+
+<p>If we take a look from the Prometheus homepage at <strong>Status&gt;Targets</strong>, we can see our application endpoint, state, labels, last scrape, scrape duration and errors.</p>
+
+<p><img src="/assets/img/2020-07-27-prometheus-config.gif" alt="nuget" /></p>
+
+<p>In the PromQL query field, we can search for our custom counter <strong>visitors</strong>.  If we hit our application page multiple times, we will see a spike in the graph.</p>
+
+<p>This completes our implementation of a custom .NET Core counter using Prometheus.</p>
+
+<p><img src="/assets/img/2020-07-27-graph.gif" alt="nuget" /></p>
+
+<p><em>The configuration we used in this post can be found on <a href="https://github.com/dewolfs/dotnetcore-prometheus">https://github.com/dewolfs/dotnetcore-prometheus</a>.</em></p>
+
+      <div class="page-footer">
+        <div class="page-share">
+          <a href="https://twitter.com/intent/tweet?text=Monitoring .Net Core Application with Prometheus on Azure AKS&url=dewolfs.github.io/monitoring-net-core-application-with-prometheus-on-azure-aks/" title="Share on Twitter" rel="nofollow" target="_blank">Twitter</a>
+          <a href="https://facebook.com/sharer.php?u=dewolfs.github.io/monitoring-net-core-application-with-prometheus-on-azure-aks/" title="Share on Facebook" rel="nofollow" target="_blank">Facebook</a>
+          <a href="https://plus.google.com/share?url=dewolfs.github.io/monitoring-net-core-application-with-prometheus-on-azure-aks/" title="Share on Google+" rel="nofollow" target="_blank">Google+</a>
+        </div>
+        <div class="page-tag">
+          
+            <a href="/tags#Azure" class="tag">&#35; Azure</a>
+          
+            <a href="/tags#Prometheus" class="tag">&#35; Prometheus</a>
+          
+            <a href="/tags#DotNetCore" class="tag">&#35; DotNetCore</a>
+          
+            <a href="/tags#Docker" class="tag">&#35; Docker</a>
+          
+            <a href="/tags#Kubernetes" class="tag">&#35; Kubernetes</a>
+          
+        </div>
+      </div>
+      <section class="comment-area">
+  <div class="comment-wrapper">
+    
+  </div>
+</section> <!-- End Comment Area -->
+
+    </div> <!-- End Wrap Content -->
+  </div> <!-- End Page Content -->
+</article> <!-- End Article Page -->
+
+</div>
+
+  </div>
+  
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-168839483-1', 'auto');
+  ga('send', 'pageview');
+</script> <!-- End Analytics -->
+
+</body>
+</html>

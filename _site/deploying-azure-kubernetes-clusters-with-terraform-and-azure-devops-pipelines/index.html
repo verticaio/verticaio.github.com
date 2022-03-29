@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Deploying Azure Kubernetes clusters with Terraform and Azure DevOps pipelines - Sam De Wolf | Microsoft Azure, Kubernetes & Cloud Native</title>
+
+  <!-- Edit site and author settings in `_config.yml` to make the social details your own -->
+
+    <meta content="Sam De Wolf | Microsoft Azure, Kubernetes & Cloud Native" property="og:site_name">
+  
+    <meta content="Deploying Azure Kubernetes clusters with Terraform and Azure DevOps pipelines" property="og:title">
+  
+  
+    <meta content="article" property="og:type">
+  
+  
+    <meta content="Deploying Azure Kubernetes cluster with Terraform and Azure DevOps pipelines" property="og:description">
+  
+  
+    <meta content="dewolfs.github.io/deploying-azure-kubernetes-clusters-with-terraform-and-azure-devops-pipelines/" property="og:url">
+  
+  
+    <meta content="2020-06-30T07:30:20+02:00" property="article:published_time">
+    <meta content="dewolfs.github.io/about/" property="article:author">
+  
+  
+    <meta content="dewolfs.github.io/assets/img/2020-06-30-Terraform-and-DevOps.jpg" property="og:image">
+  
+  
+    
+  
+  
+    
+    <meta content="Azure" property="article:tag">
+    
+    <meta content="Terraform" property="article:tag">
+    
+    <meta content="DevOps" property="article:tag">
+    
+    <meta content="Kubernetes" property="article:tag">
+    
+  
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content="@">
+    <meta name="twitter:creator" content="@sam_dewolf">
+  
+    <meta name="twitter:title" content="Deploying Azure Kubernetes clusters with Terraform and Azure DevOps pipelines">
+  
+  
+    <meta name="twitter:url" content="dewolfs.github.io/deploying-azure-kubernetes-clusters-with-terraform-and-azure-devops-pipelines/">
+  
+  
+    <meta name="twitter:description" content="Deploying Azure Kubernetes cluster with Terraform and Azure DevOps pipelines">
+  
+  
+    <meta name="twitter:image:src" content="dewolfs.github.io/assets/img/2020-06-30-Terraform-and-DevOps.jpg">
+  
+
+	<meta name="description" content="Deploying Azure Kubernetes cluster with Terraform and Azure DevOps pipelines">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta property="og:image" content="">
+	<!--<link rel="shortcut icon" href="/assets/img/favicon/favicon.ico" type="image/x-icon">
+	<link rel="apple-touch-icon" href="/assets/img/favicon/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="/assets/img/favicon/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="144x144" href="/assets/img/favicon/apple-touch-icon-144x144.png">-->
+  <!--Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#263959">
+	<!-- Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#263959">
+	<!-- iOS Safari -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="#263959">
+	<!-- Google Fonts -->
+	<link href="https://fonts.googleapis.com/css?family=PT+Serif:400,700" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet">
+	<!-- Font Awesome -->
+	<link rel="stylesheet" href="/assets/fonts/font-awesome/css/font-awesome.min.css">
+	<!-- Styles -->
+	<link rel="stylesheet" href="/assets/css/main.css">
+</head>
+
+<body>
+
+  <div class="wrapper">
+    <aside class="sidebar">
+  <header>
+    <div class="about">
+      <div class="cover-author-image">
+        <a href="/"><img src="/assets/img/bio-photo.jpg" alt="Sam De Wolf"></a>
+      </div>
+      <div class="author-name">Sam De Wolf</div>
+      <p>Focus on cloud-native application architectures using container technologies on Microsoft Azure.</p>
+    </div>
+  </header> <!-- End Header -->
+  <footer>
+    <section class="contact">
+      <h3 class="contact-title">Contact me</h3>
+      <ul>
+        
+          <li><a href="https://twitter.com/sam_dewolf" target="_blank"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+        
+        
+          <li class="github"><a href="http://github.com/dewolfs" target="_blank"><i class="fa fa-github"></i></a></li>
+        
+        
+          <li class="linkedin"><a href="https://in.linkedin.com/in/samuel-de-wolf" target="_blank"><i class="fa fa-linkedin"></i></a></li>
+        
+      </ul>
+    </section> <!-- End Section Contact -->
+    <div class="copyright">
+      <p>2020 &copy; Sam De Wolf</p>
+    </div>
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<div class="content-box clearfix">
+  <article class="article-page">
+  <div class="page-content">
+    
+    <div class="page-cover-image">
+      <figure>
+        <img class="page-image" src=/assets/img/2020-06-30-Terraform-and-DevOps.jpg alt="Deploying Azure Kubernetes clusters with Terraform and Azure DevOps pipelines">
+        
+          <figcaption>Photo By Josh Sorenson on Pexels</figcaption>
+        
+      </figure>
+    </div> <!-- End Page Cover Image -->
+    
+    <div class="wrap-content">
+      <header class="header-page">
+        <h1 class="page-title">Deploying Azure Kubernetes clusters with Terraform and Azure DevOps pipelines</h1>
+        <div class="page-date"><span>2020, Jun 30&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+      </header>
+      <p>Cloud infrastructure automation is essential to accelerate the delivery of cloud-native applications by eliminating manual tasks.  The current wave of cloud computing is offering new strategies and a model for highly distributed applications.  It is an entirely new and different approach to building infrastructure, developing applications and structuring your teams.</p>
+
+<p>Building on our experience with Terraform from our <a href="/getting-started-with-terraform-on-azure/">previous post</a>, we will improve our workflow by adopting a CI/CD pipeline for our Terraform configuration to deploy multiple resources in Microsoft Azure.</p>
+
+<h1 id="1-introduction">1. Introduction</h1>
+
+<p>All the good design principles about CI/CD that we apply for applications are also applicable for Infrastructure-<del>as</del>-Is-Code.</p>
+
+<p>The enterprise code-to-cloud challenges we encounter nowadays are:</p>
+<ul>
+  <li>ensure repeatable and consistent deployment</li>
+  <li>get end-to-end traceabililty</li>
+  <li>perform safe deployments</li>
+  <li>apply security and compliance at scale</li>
+</ul>
+
+<p>With Azure DevOps pipelines we can build more agile practices and shift into a more rolling product-delivery approach for software and service development.</p>
+
+<p>In this post, you will find more information how on to setup an Azure DevOps pipeline to deploy Azure Kubernetes clusters via Terraform.  The image below resembles what will create.</p>
+
+<p align="center">
+<img src="/assets/img/2020-06-30-DevOps-Design.png" />
+</p>
+
+<h1 id="2-code-repository-structure">2. Code Repository structure</h1>
+
+<p>Our code repository contains multiple folders.</p>
+
+<ul>
+  <li><strong>00_law:</strong> The configuration for an Azure Log Analytics workspace with two solutions connected to our Azure Kubernetes cluster.</li>
+  <li><strong>01_vnet:</strong> We provision an Azure virtual network with multiple subnets; one reserved for our nodepool of the Azure Kubernetes cluster</li>
+  <li><strong>02_acr:</strong> We plan to use the private Azure Container Registry which will host our application Docker container images.</li>
+  <li><strong>03_aks:</strong> Creation of our Azure Kubernetes cluster in the predefined virtual network and linked to our precreated Azure Log Analytics workspace.</li>
+  <li><strong>scripts:</strong> This folder contains the scripts to provision the Azure resources to store the Terraform state files.</li>
+  <li><strong>templates:</strong> To optimize readability of our IaC Azure DevOps pipeline we have broken it down into smaller parts.</li>
+</ul>
+
+<p>An important change in our Terraform configuration has been made where we have removed our service principal Id and secret together with the Tenant Id and Subscription Id.  These are still required to execute Terraform configuration but we define them now as an Azure DevOps service connection (link between Azure Devops and Azure Subscription).</p>
+
+<h1 id="3-terraform-configuration">3. Terraform configuration</h1>
+
+<p>Our Terraform configuration file to create the Azure Log Analytics workspace does also contain a section to enable two solutions.</p>
+
+<p><img src="/assets/img/2020-06-30-Terraform.png" alt="terraform" /></p>
+
+<p>The <strong>00_law/variables.tf</strong> file has the solutions variable defined as a map.  The values for the two solutions that we want to install are defined in the <strong>00_law/terraform.tfvars</strong> file.  Finally we can loop through each value using the for_each argument in the <strong>00_law/law.tf</strong> file.</p>
+
+<h1 id="4-link-between-azure-devops-and-azure-subscription">4. Link between Azure DevOps and Azure Subscription</h1>
+
+<p>The Azure service principal we have created before will be in charge to execute the deployment via Azure DevOps into our Azure Subscription.  Follow the steps below to create the service connection between Azure DevOps and our Azure Subscription.  The Azure Subscription connection name we will use later in our YAML pipeline.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th><strong>Step 1</strong></th>
+      <th><strong>Step 2</strong></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><img src="/assets/img/2020-06-30-Service-connection.png" alt="service-conn" /></td>
+      <td><img src="/assets/img/2020-06-30-Service-connection2.png" alt="service-conn" /></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Take a look at my previous post if you are unsure how to get the Subscription ID, Tenant ID and the Service Principal Id and secret.</p>
+
+<h1 id="5-setup-terraform-backend">5. Setup Terraform backend</h1>
+
+<p>Next we are going to create the required resources to store the Terraform statefiles. We want to have complete environment isolation and therefor we create a development and a production storage account to store our statefiles.  The Azure CLI commands can be found in the Github repository “terraform-azuredevops &gt; scripts &gt; init-terraform-remote-state.sh”.</p>
+
+<p>Clone the repository (see link at the end of this post) and launch the shell script.</p>
+
+<p><img src="/assets/img/2020-06-30-cli-output.png" alt="cli-output" /></p>
+
+<h1 id="6-azure-devops-pipeline">6. Azure DevOps Pipeline</h1>
+
+<p>The main <strong>azure-pipelines.yaml</strong> file is calling several child-pipelines (ex. <strong>templates/deploy-law.yaml</strong>) for the different Azure resources we are provisioning.</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">stages:
+- stage: dev
+  displayName: <span class="s1">'deploy to dev'</span>
+  <span class="nb">jobs</span>:
+  - template: templates/deploy-law.yml
+    parameters:
+      serviceConnection: <span class="s1">'azure-conn'</span>
+      environmentName: <span class="s1">'dev'</span>
+      backendAzureRmStorageAccountName: <span class="s1">'$(storageAccountNameDev)'</span></code></pre></figure>
+
+<p>The first job in the dev stage is calling the <strong>templates/deploy-law.yml</strong> (see below) pipeline to provision our Azure Log Analytics Workspace.  We are injecting the parameters at runtime and use these parameter references throughout our child-pipeline.</p>
+
+<p><img src="/assets/img/2020-06-30-AzureDevOps-yaml.png" alt="yaml" /></p>
+
+<p>This makes the main pipeline easier to read and we apply the DRY (Don’t Repeat Yourself) principle by using the adequate values for the child-pipeline parameters depending on the stage we are in.</p>
+
+<h2 id="61-pre-deployment-approvals">6.1 Pre-Deployment Approvals</h2>
+<p>Configuring approval between stages ensures that we get two pairs of eyes to ensure everything is deployed as expected before we continue to the next stage.</p>
+
+<p>To specify who is required to approve the environment go to Azure DevOps &gt; Environments &gt; Approval and checks.</p>
+
+<p><img src="/assets/img/2020-06-30-AzureDevOps-approval.png" alt="pipeline" /></p>
+
+<p>A manual approval check on an environment ensures that deployment can happen only after the reviewers have signed-off.</p>
+
+<p><img src="/assets/img/2020-06-30-AzureDevOps-pipeline1.png" alt="pipeline" /></p>
+
+<p>Azure DevOps does also provide us with a complete log file of all the tasks which have been executed on the hosted agent.</p>
+
+<p><img src="/assets/img/2020-06-30-AzureDevOps-output.png" alt="pipeline" /></p>
+
+<p><em>The configuration we used in this post can be found on <a href="https://github.com/dewolfs/terraform-azuredevops">https://github.com/dewolfs/terraform-azuredevops</a>.</em></p>
+
+      <div class="page-footer">
+        <div class="page-share">
+          <a href="https://twitter.com/intent/tweet?text=Deploying Azure Kubernetes clusters with Terraform and Azure DevOps pipelines&url=dewolfs.github.io/deploying-azure-kubernetes-clusters-with-terraform-and-azure-devops-pipelines/" title="Share on Twitter" rel="nofollow" target="_blank">Twitter</a>
+          <a href="https://facebook.com/sharer.php?u=dewolfs.github.io/deploying-azure-kubernetes-clusters-with-terraform-and-azure-devops-pipelines/" title="Share on Facebook" rel="nofollow" target="_blank">Facebook</a>
+          <a href="https://plus.google.com/share?url=dewolfs.github.io/deploying-azure-kubernetes-clusters-with-terraform-and-azure-devops-pipelines/" title="Share on Google+" rel="nofollow" target="_blank">Google+</a>
+        </div>
+        <div class="page-tag">
+          
+            <a href="/tags#Azure" class="tag">&#35; Azure</a>
+          
+            <a href="/tags#Terraform" class="tag">&#35; Terraform</a>
+          
+            <a href="/tags#DevOps" class="tag">&#35; DevOps</a>
+          
+            <a href="/tags#Kubernetes" class="tag">&#35; Kubernetes</a>
+          
+        </div>
+      </div>
+      <section class="comment-area">
+  <div class="comment-wrapper">
+    
+  </div>
+</section> <!-- End Comment Area -->
+
+    </div> <!-- End Wrap Content -->
+  </div> <!-- End Page Content -->
+</article> <!-- End Article Page -->
+
+</div>
+
+  </div>
+  
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-168839483-1', 'auto');
+  ga('send', 'pageview');
+</script> <!-- End Analytics -->
+
+</body>
+</html>

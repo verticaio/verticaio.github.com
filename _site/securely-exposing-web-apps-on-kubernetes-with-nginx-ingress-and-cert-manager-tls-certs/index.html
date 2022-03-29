@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Securely exposing web apps on Kubernetes with NGINX Ingress and Cert-manager TLS certs - Sam De Wolf | Microsoft Azure, Kubernetes & Cloud Native</title>
+
+  <!-- Edit site and author settings in `_config.yml` to make the social details your own -->
+
+    <meta content="Sam De Wolf | Microsoft Azure, Kubernetes & Cloud Native" property="og:site_name">
+  
+    <meta content="Securely exposing web apps on Kubernetes with NGINX Ingress and Cert-manager TLS certs" property="og:title">
+  
+  
+    <meta content="article" property="og:type">
+  
+  
+    <meta content="Securely exposing on web apps on Kubernetes with NGINX Ingress and Cert-manager TLS certs" property="og:description">
+  
+  
+    <meta content="dewolfs.github.io/securely-exposing-web-apps-on-kubernetes-with-nginx-ingress-and-cert-manager-tls-certs/" property="og:url">
+  
+  
+    <meta content="2020-08-25T16:30:20+02:00" property="article:published_time">
+    <meta content="dewolfs.github.io/about/" property="article:author">
+  
+  
+    <meta content="dewolfs.github.io/assets/img/2020-08-25-securely-exposing-web-apps-on-kubernetes-with-nginx-ingress-and-cert-manager-tls-certs.jpg" property="og:image">
+  
+  
+    
+  
+  
+    
+    <meta content="Azure" property="article:tag">
+    
+    <meta content="DevOps" property="article:tag">
+    
+    <meta content="Kubernetes" property="article:tag">
+    
+    <meta content="Cert-manager" property="article:tag">
+    
+    <meta content="NGINX" property="article:tag">
+    
+    <meta content="Ingress" property="article:tag">
+    
+  
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content="@">
+    <meta name="twitter:creator" content="@sam_dewolf">
+  
+    <meta name="twitter:title" content="Securely exposing web apps on Kubernetes with NGINX Ingress and Cert-manager TLS certs">
+  
+  
+    <meta name="twitter:url" content="dewolfs.github.io/securely-exposing-web-apps-on-kubernetes-with-nginx-ingress-and-cert-manager-tls-certs/">
+  
+  
+    <meta name="twitter:description" content="Securely exposing on web apps on Kubernetes with NGINX Ingress and Cert-manager TLS certs">
+  
+  
+    <meta name="twitter:image:src" content="dewolfs.github.io/assets/img/2020-08-25-securely-exposing-web-apps-on-kubernetes-with-nginx-ingress-and-cert-manager-tls-certs.jpg">
+  
+
+	<meta name="description" content="Securely exposing on web apps on Kubernetes with NGINX Ingress and Cert-manager TLS certs">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta property="og:image" content="">
+	<!--<link rel="shortcut icon" href="/assets/img/favicon/favicon.ico" type="image/x-icon">
+	<link rel="apple-touch-icon" href="/assets/img/favicon/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="/assets/img/favicon/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="144x144" href="/assets/img/favicon/apple-touch-icon-144x144.png">-->
+  <!--Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#263959">
+	<!-- Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#263959">
+	<!-- iOS Safari -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="#263959">
+	<!-- Google Fonts -->
+	<link href="https://fonts.googleapis.com/css?family=PT+Serif:400,700" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet">
+	<!-- Font Awesome -->
+	<link rel="stylesheet" href="/assets/fonts/font-awesome/css/font-awesome.min.css">
+	<!-- Styles -->
+	<link rel="stylesheet" href="/assets/css/main.css">
+</head>
+
+<body>
+
+  <div class="wrapper">
+    <aside class="sidebar">
+  <header>
+    <div class="about">
+      <div class="cover-author-image">
+        <a href="/"><img src="/assets/img/bio-photo.jpg" alt="Sam De Wolf"></a>
+      </div>
+      <div class="author-name">Sam De Wolf</div>
+      <p>Focus on cloud-native application architectures using container technologies on Microsoft Azure.</p>
+    </div>
+  </header> <!-- End Header -->
+  <footer>
+    <section class="contact">
+      <h3 class="contact-title">Contact me</h3>
+      <ul>
+        
+          <li><a href="https://twitter.com/sam_dewolf" target="_blank"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+        
+        
+          <li class="github"><a href="http://github.com/dewolfs" target="_blank"><i class="fa fa-github"></i></a></li>
+        
+        
+          <li class="linkedin"><a href="https://in.linkedin.com/in/samuel-de-wolf" target="_blank"><i class="fa fa-linkedin"></i></a></li>
+        
+      </ul>
+    </section> <!-- End Section Contact -->
+    <div class="copyright">
+      <p>2020 &copy; Sam De Wolf</p>
+    </div>
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<div class="content-box clearfix">
+  <article class="article-page">
+  <div class="page-content">
+    
+    <div class="page-cover-image">
+      <figure>
+        <img class="page-image" src=/assets/img/2020-08-25-securely-exposing-web-apps-on-kubernetes-with-nginx-ingress-and-cert-manager-tls-certs.jpg alt="Securely exposing web apps on Kubernetes with NGINX Ingress and Cert-manager TLS certs">
+        
+          <figcaption>Photo By Dave Hoefler on Pexels</figcaption>
+        
+      </figure>
+    </div> <!-- End Page Cover Image -->
+    
+    <div class="wrap-content">
+      <header class="header-page">
+        <h1 class="page-title">Securely exposing web apps on Kubernetes with NGINX Ingress and Cert-manager TLS certs</h1>
+        <div class="page-date"><span>2020, Aug 25&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+      </header>
+      <p>Now that we have our application inside our Azure AKS up and running we want to make it available to the outside world in a secure and scalable fashion.
+How can we handle traffic coming towards our cluster from external facing clients?  How can we intelligently and quickly route the traffic without having to deploy a ton of layer 4 load balancers.</p>
+
+<p><em>We continue on the implementation we have discussed in the previous post <a href="/monitoring-net-core-application-with-prometheus-on-azure-aks/">Monitoring .Net Core Application with Prometheus on Azure AKS</a></em></p>
+
+<h1 id="1-introduction">1. Introduction</h1>
+
+<p>The Kubernetes ingress resource provides a simple way to configure external layer 7 load balancing for applications on Kubernetes.  It functions as the entrance into our applications, <em>the metaphorical gate</em>.  We can integrate our applications and traffic in a natural, Kubernetes-native way using the built-in ingress resource to solve common access problems and empower users to build software for handling custom traffic patterns.</p>
+
+<p>The ingress controller acts as the entry point for all incoming traffic to applications running on Kubernetes.
+Ingress is giving your services externally-reachable urls, load balance traffic, terminate SSL, offer names based virtual hosting,etc…</p>
+
+<p>The following image gives you an overview of what we will implement today:</p>
+
+<p align="center">
+<img src="/assets/img/2020-08-25-design.gif" />
+</p>
+
+<p>A cloud environment is by defintion extremely volatile.  Luckily the creation and management of TLS certificates in a Kubernetes environment can be automated with Cert-manager to have a consistent, secure and declared-as-code machine identity protection.</p>
+
+<p><strong><a href="https://cert-manager.io/">Cert-manager</a></strong> automates the management and issuance of TLS certificates from various issuing sources.  It will periodically check the validity of the certificates and will start the renewal process if necessary.</p>
+
+<ul>
+  <li>
+    <p>A <strong>ClusterIssuer</strong> represents a certificate Authority that is able to generate signed certificates by honoring certificate signing requests.  A certificate is a namespaced resource that references an ClusterIssuer that determines what will be honoring the certificate request.</p>
+  </li>
+  <li>
+    <p>When a certificate is created, a corresponding CertificateRequest resource is created by Cert-manager containing the encoded X509 certificate request and issuer reference.</p>
+  </li>
+</ul>
+
+<p>Cert-manager is using <strong><a href="https://letsencrypt.org/">Let’s Encrypt</a></strong> which is a free, automated and open Certificate Authority.</p>
+
+<p>Our application should be publicly accessible by routing external requests to the pods in our Kubernetes service offering a controlled network channel.  Kubernetes ingress describes how to route different types of requests to different services based on predetermined set of rules.</p>
+
+<h1 id="2-installing-and-configuring-nginx-ingress-controller">2. Installing and configuring NGINX Ingress Controller</h1>
+
+<p>We start with the first Azure DevOps pipeline <strong>1-nginx-cert-manager-pipeline.yml</strong> to install the NGINX Ingress controller and the Cert-manager charts via Helm.  Automatically a public IP gets assigned to our NGINX Ingress controller which is the default behaviour in public cloud environments. If you now browse to this public IP you will land on the default “404 - No backend configured” page.</p>
+
+<p><img src="/assets/img/2020-08-25-ingress.gif" alt="ingress" /></p>
+
+<h1 id="3-setup-cert-manager-with-lets-encrypt">3. Setup Cert-manager with Let’s Encrypt</h1>
+
+<p>The deployment of Cert-manager via Helm will give us the following result:</p>
+
+<p><img src="/assets/img/2020-08-25-cert-manager.gif" alt="certmanager" /></p>
+
+<p>Besides these objects we also need an <strong>Issuer</strong> which is a Certificate Authority who provisions TLS certificates for a domain.  We choose a <strong>ClusterIssuer</strong> which can be used cluster-wide in all namespaces.</p>
+
+<p><img src="/assets/img/2020-08-25-cluster-issuer.gif" alt="clusterissuer" /></p>
+
+<p>The <strong>spec.acme.privateKeySecretKeyRef</strong> is the Kubernetes secret used to store the ACME account private key that Cert-manager creates for us.</p>
+
+<p>Cert-manager will create custom resources to issue a certificate, orders and challenges.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl get challenges, orders
+<span class="nv">$ </span>kubectl describe challenge &lt;insert challenge-name&gt;
+<span class="nv">$ </span>kubectl describe order &lt;insert order-name&gt;
+</code></pre></div></div>
+
+<p>Use the following commands to view the outcome:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl get clusterissuer,certificates <span class="nt">--all-namespaces</span>
+<span class="nv">$ </span>kubectl describe certificate thebank-ingress.westeurope.cloudapp.azure.com <span class="nt">-n</span> thebank
+</code></pre></div></div>
+
+<h1 id="4-deploy-kubernetes-ingress">4. Deploy Kubernetes ingress</h1>
+
+<p>We re-use the Azure DevOps pipeline <strong>2-thebank-app-pipeline.yml</strong> from our <a href="/monitoring-net-core-application-with-prometheus-on-azure-aks/">previous blogpost</a>. Additionally we add a pipeline-task to deploy the Kubernetes ingress manifest for our application in the application namespace.</p>
+
+<p><img src="/assets/img/2020-08-25-ingress-detail.gif" alt="ingress" /></p>
+
+<p>The Kubernetes annotation <strong>nginx.ingress.kubernetes.io/force-ssl-redirect: “true”</strong> in the ingress manifest will redirect traffic from http to https when TLS is enabled on the ingress.</p>
+
+<p>We specify in the annotation also the <strong>ingress.class</strong> to <strong>nginx</strong> to make sure that this ingress can only be served by our NGINX ingress controller.  The <strong>spec.tls.secretName</strong> is the Kubernetes secret to store the certificate received from <strong>Let’s Encrypt</strong>.</p>
+
+<p><img src="/assets/img/2020-08-25-ingress-anno.gif" alt="annotation" /></p>
+
+<p>The end-result gives us a TLS secured website with a valid certificate.</p>
+
+<p><img src="/assets/img/2020-08-25-https.gif" alt="https" /></p>
+
+<h2 id="41-tls-verification">4.1 TLS verification</h2>
+
+<p>Let’s verify with <a href="https://www.ssllabs.com/ssltest">SSL Labs</a> to identify we are in good shape for our TLS implementation.</p>
+
+<p><img src="/assets/img/2020-08-25-ssllabs.gif" alt="https" /></p>
+
+<h1 id="5-troubleshooting-tips">5. Troubleshooting tips</h1>
+
+<h2 id="51-check-nginx-configuration">5.1 Check NGINX configuration</h2>
+
+<p>We can verify the NGINX config file inside the NGINX controller pod.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl <span class="nb">exec</span> <span class="nt">-it</span> <span class="nt">-n</span> ingress nginx-ingress-controller-f4979b754-pn6ld /bin/bash
+
+bash-5.0<span class="nv">$ </span><span class="nb">cat</span> /etc/nginx/nginx.conf | <span class="nb">grep</span> <span class="nt">-A</span> 10 thebank
+</code></pre></div></div>
+<h2 id="52-verify-nginx-container-logs">5.2 Verify NGINX container logs</h2>
+
+<p>The log file of the NGINX Ingress controller will give you more information about the applied Ingress rules.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl logs <span class="nt">-n</span> ingress nginx-ingress-controller-f4979b754-pn6ld
+</code></pre></div></div>
+
+<h2 id="53-kubernetes-service-reachability-within-the-cluster">5.3 Kubernetes service reachability within the cluster</h2>
+
+<p>To exclude Kubernetes service misconfiguration, we access the NGINX ingress controller and try to reach our application service on the internal port.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl <span class="nb">exec</span> <span class="nt">-it</span> <span class="nt">-n</span> ingress nginx-ingress-controller-f4979b754-pn6ld /bin/bash
+bash-5.0<span class="nv">$ </span>curl 10.0.207.9
+</code></pre></div></div>
+
+<h2 id="54-verify-cert-manager-container-logs">5.4 Verify Cert-manager container logs</h2>
+
+<p>The log file of the Cert-manager will give you more info about the certificate process.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl <span class="nt">--namespace</span> cert-manager logs <span class="nt">-l</span> <span class="nv">app</span><span class="o">=</span>cert-manager <span class="nt">-c</span> cert-manager
+</code></pre></div></div>
+
+<p><em>The configuration we used in this post can be found on <a href="https://github.com/dewolfs/kubernetes-nginx-certs">https://github.com/dewolfs/kubernetes-nginx-certs</a>.</em></p>
+
+      <div class="page-footer">
+        <div class="page-share">
+          <a href="https://twitter.com/intent/tweet?text=Securely exposing web apps on Kubernetes with NGINX Ingress and Cert-manager TLS certs&url=dewolfs.github.io/securely-exposing-web-apps-on-kubernetes-with-nginx-ingress-and-cert-manager-tls-certs/" title="Share on Twitter" rel="nofollow" target="_blank">Twitter</a>
+          <a href="https://facebook.com/sharer.php?u=dewolfs.github.io/securely-exposing-web-apps-on-kubernetes-with-nginx-ingress-and-cert-manager-tls-certs/" title="Share on Facebook" rel="nofollow" target="_blank">Facebook</a>
+          <a href="https://plus.google.com/share?url=dewolfs.github.io/securely-exposing-web-apps-on-kubernetes-with-nginx-ingress-and-cert-manager-tls-certs/" title="Share on Google+" rel="nofollow" target="_blank">Google+</a>
+        </div>
+        <div class="page-tag">
+          
+            <a href="/tags#Azure" class="tag">&#35; Azure</a>
+          
+            <a href="/tags#DevOps" class="tag">&#35; DevOps</a>
+          
+            <a href="/tags#Kubernetes" class="tag">&#35; Kubernetes</a>
+          
+            <a href="/tags#Cert-manager" class="tag">&#35; Cert-manager</a>
+          
+            <a href="/tags#NGINX" class="tag">&#35; NGINX</a>
+          
+            <a href="/tags#Ingress" class="tag">&#35; Ingress</a>
+          
+        </div>
+      </div>
+      <section class="comment-area">
+  <div class="comment-wrapper">
+    
+  </div>
+</section> <!-- End Comment Area -->
+
+    </div> <!-- End Wrap Content -->
+  </div> <!-- End Page Content -->
+</article> <!-- End Article Page -->
+
+</div>
+
+  </div>
+  
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-168839483-1', 'auto');
+  ga('send', 'pageview');
+</script> <!-- End Analytics -->
+
+</body>
+</html>

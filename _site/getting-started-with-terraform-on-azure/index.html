@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Getting started with Terraform on Microsoft Azure - Sam De Wolf | Microsoft Azure, Kubernetes & Cloud Native</title>
+
+  <!-- Edit site and author settings in `_config.yml` to make the social details your own -->
+
+    <meta content="Sam De Wolf | Microsoft Azure, Kubernetes & Cloud Native" property="og:site_name">
+  
+    <meta content="Getting started with Terraform on Microsoft Azure" property="og:title">
+  
+  
+    <meta content="article" property="og:type">
+  
+  
+    <meta content="Getting started with Terraform on Microsoft Azure" property="og:description">
+  
+  
+    <meta content="dewolfs.github.io/getting-started-with-terraform-on-azure/" property="og:url">
+  
+  
+    <meta content="2020-06-09T07:02:20+02:00" property="article:published_time">
+    <meta content="dewolfs.github.io/about/" property="article:author">
+  
+  
+    <meta content="dewolfs.github.io/assets/img/2020-06-09-Getting-started.jpg" property="og:image">
+  
+  
+    
+  
+  
+    
+    <meta content="Azure" property="article:tag">
+    
+    <meta content="Terraform" property="article:tag">
+    
+  
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content="@">
+    <meta name="twitter:creator" content="@sam_dewolf">
+  
+    <meta name="twitter:title" content="Getting started with Terraform on Microsoft Azure">
+  
+  
+    <meta name="twitter:url" content="dewolfs.github.io/getting-started-with-terraform-on-azure/">
+  
+  
+    <meta name="twitter:description" content="Getting started with Terraform on Microsoft Azure">
+  
+  
+    <meta name="twitter:image:src" content="dewolfs.github.io/assets/img/2020-06-09-Getting-started.jpg">
+  
+
+	<meta name="description" content="Getting started with Terraform on Microsoft Azure">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta property="og:image" content="">
+	<!--<link rel="shortcut icon" href="/assets/img/favicon/favicon.ico" type="image/x-icon">
+	<link rel="apple-touch-icon" href="/assets/img/favicon/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="/assets/img/favicon/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="144x144" href="/assets/img/favicon/apple-touch-icon-144x144.png">-->
+  <!--Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#263959">
+	<!-- Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#263959">
+	<!-- iOS Safari -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="#263959">
+	<!-- Google Fonts -->
+	<link href="https://fonts.googleapis.com/css?family=PT+Serif:400,700" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet">
+	<!-- Font Awesome -->
+	<link rel="stylesheet" href="/assets/fonts/font-awesome/css/font-awesome.min.css">
+	<!-- Styles -->
+	<link rel="stylesheet" href="/assets/css/main.css">
+</head>
+
+<body>
+
+  <div class="wrapper">
+    <aside class="sidebar">
+  <header>
+    <div class="about">
+      <div class="cover-author-image">
+        <a href="/"><img src="/assets/img/bio-photo.jpg" alt="Sam De Wolf"></a>
+      </div>
+      <div class="author-name">Sam De Wolf</div>
+      <p>Focus on cloud-native application architectures using container technologies on Microsoft Azure.</p>
+    </div>
+  </header> <!-- End Header -->
+  <footer>
+    <section class="contact">
+      <h3 class="contact-title">Contact me</h3>
+      <ul>
+        
+          <li><a href="https://twitter.com/sam_dewolf" target="_blank"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+        
+        
+          <li class="github"><a href="http://github.com/dewolfs" target="_blank"><i class="fa fa-github"></i></a></li>
+        
+        
+          <li class="linkedin"><a href="https://in.linkedin.com/in/samuel-de-wolf" target="_blank"><i class="fa fa-linkedin"></i></a></li>
+        
+      </ul>
+    </section> <!-- End Section Contact -->
+    <div class="copyright">
+      <p>2020 &copy; Sam De Wolf</p>
+    </div>
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<div class="content-box clearfix">
+  <article class="article-page">
+  <div class="page-content">
+    
+    <div class="page-cover-image">
+      <figure>
+        <img class="page-image" src=/assets/img/2020-06-09-Getting-started.jpg alt="Getting started with Terraform on Microsoft Azure">
+        
+          <figcaption>Photo By Joyston Judah on Pexels</figcaption>
+        
+      </figure>
+    </div> <!-- End Page Cover Image -->
+    
+    <div class="wrap-content">
+      <header class="header-page">
+        <h1 class="page-title">Getting started with Terraform on Microsoft Azure</h1>
+        <div class="page-date"><span>2020, Jun 09&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+      </header>
+      <p>Gone are the days of manual deployments, maintenance and upgrades.  In a cloud native world, infrastructure management is repeatable, automated and version controlled. To reach this goal we must consider template-based deployment technologies.</p>
+
+<h1 id="1-introduction">1. Introduction</h1>
+
+<p>Infrastructure-As-Code is a key element for a successfull DevOps transformation.  Infrastructure and services can be described as code to manage the full lifecycle:</p>
+<ul>
+  <li>Initial provisioning</li>
+  <li>In-serivce maintenance</li>
+  <li>Service decommissioning</li>
+</ul>
+
+<p>With the ever-increasing pace of development, embracing Infrastructure-As-Code to continuously create your cloud environment is a must. Terraform is a cross computing environment templating language create by Hashicorp. This means we can provision, update and delete resources in all major clouds.  This is a huge differentiator compared to Azure Resource Manager templates where we are limited to deploying resources to Azure.</p>
+
+<p>To get started with Terraform we first need to download the latest Terraform binary from <a href="https://www.terraform.io/downloads.html">https://www.terraform.io/downloads.html</a>.  We will first use Terraform interactively via the CLI.  In a next phase we will implement an CI/CD pipeline in Azure DevOps.</p>
+
+<h1 id="2-code-repository-structure">2. Code Repository Structure</h1>
+
+<p>Our infrastructure code is hosted in the same repository as our application code.  The repository contains several folders which will be used in chronological order.</p>
+<ul>
+  <li><strong>00_storageAccount</strong>: We want to save our statefile in a remote location (= Azure Storage Account).</li>
+  <li><strong>01_backend</strong>: In order to make the switch from local statefile to our remote location we need to execute a configuration.</li>
+  <li><strong>02_vnet</strong>: We want to provision an Azure virtual network.</li>
+  <li><strong>03_law</strong>: Finally we will deploy an Azure Log Analytics workspace and enable two solutions.</li>
+</ul>
+
+<p>Each folder contains the following files:</p>
+<ul>
+  <li><strong>.gitignore</strong>: The .gitignore file is a text file that tells Git which files or folders to ignore in a project.</li>
+  <li><strong>output.tf</strong>: The output file contains the values of the resources which have been created.</li>
+  <li><strong>backend.tf</strong>: The backend file consists of the definition where the Terraform state file should be saved.</li>
+  <li><strong>provider.tf</strong>: Terraform works with public cloud providers such as Azure/AWS/GCP provider.  The details how to authenticate to the Azure API via Terraform are stored in the provider file.</li>
+  <li><strong>terraform.tfvars</strong>: The values for the variables used in our configuration are stored in this file.</li>
+  <li><strong>variables.tf</strong>: The definition of the variables used in the Terraform configuration.</li>
+  <li><strong>resource-specific.tf</strong>: The actual configuration of what we will deploy.</li>
+</ul>
+
+<h1 id="3-authentication-to-azure-api">3. Authentication to Azure API</h1>
+
+<p>The recommended approach to execute your Terraform configuration against the Azure API is by leveraging an Azure AD service principal.  To create a service principal, open the Azure cloud shell via <a href="https://shell.azure.com">https://shell.azure.com</a>.  This service principal will be used to create/modify/delete resources in Azure. Hence the reason why this service principal account will need Contributor rights on our Azure Subscription.</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell"><span class="c"># Retrieve the subscription ID</span>
+az account list <span class="nt">--output</span> table
+
+<span class="c"># Create a service principal with Contributor rights to our subscription</span>
+az ad sp create-for-rbac <span class="nt">--role</span><span class="o">=</span><span class="s2">"Contributor"</span> <span class="nt">--scope</span><span class="o">=</span><span class="s2">"/subscriptions/0000-0000-0000-0000"</span> <span class="nt">--name</span><span class="o">=</span><span class="s2">"sp-p-terraform"</span></code></pre></figure>
+
+<p><img src="/assets/img/2020-06-09-shell-sp.png" alt="Cloud Shell" /></p>
+
+<p>The output of ad sp create command will be used in the next section.</p>
+
+<h1 id="4-variable-definition">4. Variable Definition</h1>
+
+<p>We will now add the details of our Azure AD service principal to our <strong>terraform.tfvars</strong> file.  To make it easy, you can use the following commands:</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell"><span class="nv">ApplicationId</span><span class="o">=</span><span class="si">$(</span>az ad app list <span class="nt">--display-name</span> sp-p-terraform <span class="nt">--query</span> <span class="o">[]</span>.appId <span class="nt">-o</span> tsv<span class="si">)</span>
+<span class="nv">TenantId</span><span class="o">=</span><span class="si">$(</span>az account list | jq <span class="nt">-r</span> <span class="s1">'.[].tenantId'</span><span class="si">)</span>
+<span class="nv">SubscriptionId</span><span class="o">=</span><span class="si">$(</span>az account list | jq <span class="nt">-r</span> <span class="s1">'.[].id'</span><span class="si">)</span>
+<span class="nb">echo</span> <span class="nt">-e</span> <span class="s2">"Subscription_id : </span><span class="nv">$SubscriptionId</span><span class="se">\n</span><span class="s2">Client_id : </span><span class="nv">$ApplicationId</span><span class="se">\n</span><span class="s2">Client_secret : only visible at creation time, not retrievable afterwards</span><span class="se">\n</span><span class="s2">Tenant_id : </span><span class="nv">$TenantId</span><span class="s2">"</span></code></pre></figure>
+
+<p><img src="/assets/img/2020-06-09-shell-sp-output.png" alt="Service Principal" /></p>
+
+<p>Now change “–REPLACE-ME–” in our <strong>terraform.tfvars</strong> example file with the output from the commands above.</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">subscription_id                 <span class="o">=</span> <span class="s2">"--REPLACE-ME--"</span>
+client_id                       <span class="o">=</span> <span class="s2">"--REPLACE-ME--"</span>
+client_secret                   <span class="o">=</span> <span class="s2">"--REPLACE-ME--"</span>
+tenant_id                       <span class="o">=</span> <span class="s2">"--REPLACE-ME--"</span></code></pre></figure>
+
+<h1 id="5-terraform-azure-resource-provisioning">5. Terraform Azure Resource Provisioning</h1>
+
+<h2 id="51-storage-account">5.1. Storage Account</h2>
+<p>Our first folder contains the necessary configuration to provision an Azure Storage Account.  We avoid to use hard-coded values in our configuration and prefer to use variables.</p>
+
+<p>Enter into the first folder and use the following Terraform CLI workflow:</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">terraform init
+terraform plan
+terraform apply</code></pre></figure>
+
+<p>The storage account gets created with the following output.</p>
+
+<p><img src="/assets/img/2020-06-09-tf-sta-output.png" alt="Storage Account" /></p>
+
+<p>Copy the Access Key from the output into the <strong>backend.tf</strong> file of the different folders <strong>01_backend/02_vnet/03_law</strong>.  Each backend file now contains a specific key per Azure resource and the Access Key of our Azure Storage Account.</p>
+
+<h2 id="52-backend-configuration">5.2. Backend configuration</h2>
+
+<p>Now we will make the switch from local state file to remote statefile.</p>
+
+<p>Move into the folder <strong>01_Backend</strong> and run the command:</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">terraform init <span class="nt">-backend-config</span><span class="o">=</span><span class="s2">"backend.tf"</span></code></pre></figure>
+
+<p><img src="/assets/img/2020-06-09-tf-backend.png" alt="Statefile" /></p>
+
+<h2 id="53-virtual-network">5.3. Virtual Network</h2>
+
+<p>Move into the folder <strong>02_vnet</strong> and run the same workflow as before (init-plan-apply).</p>
+
+<p><img src="/assets/img/2020-06-09-tf-vnet-output.png" alt="Virtual Network" /></p>
+
+<h2 id="54-log-analytics-workspace">5.4. Log Analytics Workspace</h2>
+
+<p>Enter into the folder <strong>03_law</strong> and run the same workflow as before (init-plan-apply) to create the Log Analytics workspace together with the two solutions.</p>
+
+<p><img src="/assets/img/2020-06-09-tf-law-plan.png" alt="Virtual Network" /></p>
+
+<p><img src="/assets/img/2020-06-09-tf-law-output.png" alt="Virtual Network" /></p>
+
+<p>Embracing any new technology is a journey of learning and experimentation.</p>
+
+<p><em>The configuration we used in this post can be found on <a href="https://github.com/dewolfs/terraform-azure-base">https://github.com/dewolfs/terraform-azure-base</a>.</em></p>
+
+      <div class="page-footer">
+        <div class="page-share">
+          <a href="https://twitter.com/intent/tweet?text=Getting started with Terraform on Microsoft Azure&url=dewolfs.github.io/getting-started-with-terraform-on-azure/" title="Share on Twitter" rel="nofollow" target="_blank">Twitter</a>
+          <a href="https://facebook.com/sharer.php?u=dewolfs.github.io/getting-started-with-terraform-on-azure/" title="Share on Facebook" rel="nofollow" target="_blank">Facebook</a>
+          <a href="https://plus.google.com/share?url=dewolfs.github.io/getting-started-with-terraform-on-azure/" title="Share on Google+" rel="nofollow" target="_blank">Google+</a>
+        </div>
+        <div class="page-tag">
+          
+            <a href="/tags#Azure" class="tag">&#35; Azure</a>
+          
+            <a href="/tags#Terraform" class="tag">&#35; Terraform</a>
+          
+        </div>
+      </div>
+      <section class="comment-area">
+  <div class="comment-wrapper">
+    
+  </div>
+</section> <!-- End Comment Area -->
+
+    </div> <!-- End Wrap Content -->
+  </div> <!-- End Page Content -->
+</article> <!-- End Article Page -->
+
+</div>
+
+  </div>
+  
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-168839483-1', 'auto');
+  ga('send', 'pageview');
+</script> <!-- End Analytics -->
+
+</body>
+</html>
